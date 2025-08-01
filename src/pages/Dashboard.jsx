@@ -1,18 +1,63 @@
-import { Users, BookOpen, UserCheck, DollarSign, TrendingUp } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { useEffect, useState } from 'react';
+import {
+  Users,
+  BookOpen,
+  UserCheck,
+  DollarSign
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from 'recharts';
 import StatsCard from '../components/UI/StatsCard';
-import { dashboardStats } from '../data/mockData';
+import { fetchDashboardStats, fetchMonthlyStats, fetchRecentEnrollments, fetchTopCourses } from '../API/dashboardApi';
 
-const chartData = [
-  { name: 'Jan', users: 400, revenue: 2400, courses: 24 },
-  { name: 'Feb', users: 300, revenue: 1398, courses: 28 },
-  { name: 'Mar', users: 200, revenue: 9800, courses: 32 },
-  { name: 'Apr', users: 278, revenue: 3908, courses: 35 },
-  { name: 'May', users: 189, revenue: 4800, courses: 38 },
-  { name: 'Jun', users: 239, revenue: 3800, courses: 42 },
-];
+
 
 const Dashboard = () => {
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+const [chartData, setChartData] = useState([]);
+const [recentEnrollments, setRecentEnrollments] = useState([]);
+const [topCourses, setTopCourses] = useState([]);
+
+useEffect(() => {
+  fetchTopCourses().then(setTopCourses);
+}, []);
+
+
+useEffect(() => {
+  fetchRecentEnrollments().then(setRecentEnrollments);
+}, []);
+
+useEffect(() => {
+  fetchMonthlyStats().then(setChartData);
+}, []);
+
+
+  useEffect(() => {
+    fetchDashboardStats()
+      .then(data => {
+        setDashboardStats(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Lỗi khi load thống kê dashboard:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading || !dashboardStats) {
+    return <div className="text-center py-10 text-gray-500">Đang tải thống kê...</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -28,7 +73,7 @@ const Dashboard = () => {
         <StatsCard
           title="Total Courses"
           value={dashboardStats.totalCourses}
-          change={dashboardStats.courseGrowth}
+          change={dashboardStats.courseGrowth ?? 0}
           changeType="increase"
           icon={BookOpen}
           color="blue"
@@ -36,7 +81,7 @@ const Dashboard = () => {
         <StatsCard
           title="Total Users"
           value={dashboardStats.totalUsers.toLocaleString()}
-          change={dashboardStats.userGrowth}
+          change={dashboardStats.userGrowth ?? 0}
           changeType="increase"
           icon={Users}
           color="green"
@@ -44,15 +89,15 @@ const Dashboard = () => {
         <StatsCard
           title="Total Instructors"
           value={dashboardStats.totalInstructors}
-          change={dashboardStats.instructorGrowth}
+          change={dashboardStats.instructorGrowth ?? 0}
           changeType="increase"
           icon={UserCheck}
           color="purple"
         />
         <StatsCard
           title="Total Revenue"
-          value={`$${(dashboardStats.totalRevenue / 1000).toFixed(0)}k`}
-          change={dashboardStats.revenueGrowth}
+          value={dashboardStats.totalRevenue.toLocaleString()} 
+          change={dashboardStats.revenueGrowth ?? 0}
           changeType="increase"
           icon={DollarSign}
           color="yellow"
@@ -90,45 +135,46 @@ const Dashboard = () => {
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
+       <div className="card">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Enrollments</h3>
           <div className="space-y-3">
-            {[1, 2, 3, 4].map((item) => (
-              <div key={item} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+            {recentEnrollments.map((item, idx) => (
+              <div key={idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                 <div className="h-10 w-10 bg-primary-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-medium">A{item}</span>
+                  <span className="text-white font-medium">{item.userName.charAt(0)}</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Student {item} enrolled in React Course</p>
-                  <p className="text-xs text-gray-500">2 hours ago</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {item.userName} enrolled in {item.courseTitle}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(item.enrolledAt).toLocaleString('vi-VN')}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Performing Courses</h3>
-          <div className="space-y-3">
-            {[
-              { title: 'Complete React Development', students: 1250, rating: 4.8 },
-              { title: 'Advanced JavaScript', students: 890, rating: 4.9 },
-              { title: 'Python for Data Science', students: 756, rating: 4.7 },
-              { title: 'UI/UX Design Basics', students: 456, rating: 4.6 },
-            ].map((course, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{course.title}</p>
-                  <p className="text-xs text-gray-500">{course.students} students</p>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <span className="text-yellow-500">★</span>
-                  <span className="text-sm font-medium">{course.rating}</span>
-                </div>
+
+       <div className="card">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Performing Courses</h3>
+        <div className="space-y-3">
+          {topCourses.map((course, index) => (
+            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{course.title}</p>
+                <p className="text-xs text-gray-500">{course.students} students</p>
               </div>
-            ))}
-          </div>
+              <div className="flex items-center space-x-1">
+                <span className="text-yellow-500">★</span>
+                <span className="text-sm font-medium">{course.rating.toFixed(1)}</span>
+              </div>
+            </div>
+          ))}
         </div>
+      </div>
+
       </div>
     </div>
   );

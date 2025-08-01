@@ -2,23 +2,44 @@ import { useState } from 'react';
 import { Plus, Eye, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
-import { mockCourses } from '../data/mockData';
+import { useEffect } from 'react';
+import { fetchCourseSummaries, updateCourseStatusAPI } from '../API/courseApi';
+
+
 
 const Courses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [modalMode, setModalMode] = useState('create'); // 'create', 'edit', 'view'
   const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [filters, setFilters] = useState({ status: '', category: '' });
+  const [categories, setCategories] = useState([]);
+
+  const loadCourses = async () => {
+    try {
+      const data = await fetchCourseSummaries();
+      setCourses(data);
+      const uniqueCategories = [...new Set(data.map(course => course.category).filter(Boolean))];
+      setCategories(uniqueCategories);
+    } catch (err) {
+      console.error("Lỗi khi load danh sách khóa học:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadCourses();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Published':
+      case 'PUBLISHED':
         return 'bg-green-100 text-green-800';
-      case 'Draft':
+      case 'DRAFT':
         return 'bg-gray-100 text-gray-800';
-      case 'Under Review':
+      case 'ARCHIVED':
         return 'bg-yellow-100 text-yellow-800';
-      case 'Archived':
+      case 'DISABLED':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -72,11 +93,11 @@ const Courses = () => {
         <div>
           {course.discountPrice ? (
             <div>
-              <span className="text-gray-500 line-through text-sm">${course.price}</span>
-              <span className="ml-2 font-medium text-green-600">${course.discountPrice}</span>
+              <span className="text-gray-500 line-through text-sm">${Number(course.price).toLocaleString('vi-VN')}</span>
+              <span className="ml-2 font-medium text-green-600">${Number(course.discountPrice).toLocaleString('vi-VN')}</span>
             </div>
           ) : (
-            <span className="font-medium">${course.price}</span>
+            <span className="font-medium">${Number(course.price).toLocaleString('vi-VN')}</span>
           )}
         </div>
       )
@@ -117,11 +138,6 @@ const Courses = () => {
     }
   ];
 
-  const handleCreate = () => {
-    setModalMode('create');
-    setSelectedCourse(null);
-    setIsModalOpen(true);
-  };
 
   const handleEdit = (course) => {
     setModalMode('edit');
@@ -135,58 +151,90 @@ const Courses = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (course) => {
-    if (confirm(`Are you sure you want to delete "${course.title}"?`)) {
-      console.log('Deleting course:', course);
-    }
-  };
-
-  const handleStatusChange = (course) => {
+const handleStatusChange = (course) => {
     setSelectedCourse(course);
     setStatusModalOpen(true);
   };
 
-  const updateCourseStatus = (newStatus) => {
-    console.log(`Updating course ${selectedCourse.id} status to ${newStatus}`);
-    // Here you would typically make an API call to update the status
-    setStatusModalOpen(false);
-    setSelectedCourse(null);
+  const updateCourseStatus = async (newStatus) => {
+    try {
+      await updateCourseStatusAPI(selectedCourse.id, newStatus);
+      await loadCourses();
+    } catch (err) {
+      console.error("Cập nhật trạng thái thất bại:", err);
+    } finally {
+      setStatusModalOpen(false);
+      setSelectedCourse(null);
+    }
   };
 
+ const handleDelete = async (course) => {
+  if (confirm(`Bạn có chắc chắn muốn xoá "${course.title}" không?`)) {
+    try {
+      console.log("Xoá khoá học:", course.id);
+      // Gọi API cập nhật trạng thái sang "ARCHIVED" hoặc "DISABLED"
+      await updateCourseStatusAPI(course.id, 'DISABLED'); 
+      await loadCourses(); // refresh lại danh sách
+    } catch (err) {
+      console.error("❌ Xoá khoá học thất bại:", err);
+    }
+  }
+};
+
+const filteredCourses = courses.filter(course => {
+  const byStatus = filters.status ? course.status === filters.status : true;
+  const byCategory = filters.category ? course.category === filters.category : true;
+  return byStatus && byCategory;
+});
+
+
+ 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
-            <select className="input w-auto">
+           <select
+              className="input w-auto"
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            >
               <option value="">All Status</option>
-              <option value="Published">Published</option>
-              <option value="Draft">Draft</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Archived">Archived</option>
+              <option value="PUBLISHED">Published</option>
+              <option value="DRAFT">Draft</option>
+              <option value="ARCHIVED">Archived</option>
+              <option value="DISABLED">Disabled</option>
             </select>
-            <select className="input w-auto">
+
+            <select
+              className="input w-auto"
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+            >
               <option value="">All Categories</option>
-              <option value="Web Development">Web Development</option>
-              <option value="Programming">Programming</option>
-              <option value="Design">Design</option>
+              {categories.map((cat, i) => (
+                <option key={i} value={cat}>{cat}</option>
+              ))}
             </select>
+
           </div>
-          <button onClick={handleCreate} className="btn-primary">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Course
-          </button>
+        
         </div>
       </div>
 
+    {courses.length === 0 ? (
+      <div>Đang tải dữ liệu khoá học...</div>
+    ) : (
       <DataTable
-        data={mockCourses}
+        data={filteredCourses}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onView={handleView}
       />
+    )}
+
 
       {/* Course Form Modal */}
       <Modal
@@ -226,13 +274,24 @@ const Courses = () => {
 const StatusChangeForm = ({ course, onStatusChange, onClose }) => {
   const [newStatus, setNewStatus] = useState(course?.status || '');
   const [reason, setReason] = useState('');
-
   const statusOptions = [
-    { value: 'Draft', label: 'Draft', description: 'Course is being prepared' },
-    { value: 'Under Review', label: 'Under Review', description: 'Course is being reviewed for approval' },
-    { value: 'Published', label: 'Published', description: 'Course is live and available to students' },
-    { value: 'Archived', label: 'Archived', description: 'Course is no longer available for new enrollments' }
+    {
+      value: 'DRAFT',
+      label: 'Đang duyệt',
+      description: 'Khóa học đang chờ phê duyệt'
+    },
+    {
+      value: 'PUBLISHED',
+      label: 'Xuất bản',
+      description: 'Khóa học đã được công khai cho học viên'
+    },
+    {
+      value: 'ARCHIVED',
+      label: 'Lưu trữ',
+      description: 'Khóa học không còn được ghi danh mới'
+    }
   ];
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -268,17 +327,6 @@ const StatusChangeForm = ({ course, onStatusChange, onClose }) => {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Change (Optional)</label>
-        <textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows="3"
-          className="input"
-          placeholder="Explain why you're changing the status..."
-        />
-      </div>
-
       <div className="flex justify-end space-x-3 pt-4">
         <button type="button" onClick={onClose} className="btn-secondary">
           Cancel
@@ -304,7 +352,7 @@ const CourseForm = ({ course, mode, onClose }) => {
     price: course?.price || '',
     discountPrice: course?.discountPrice || '',
     description: course?.description || '',
-    status: course?.status || 'Draft',
+    status: course?.status || 'DRAFT',
   });
 
   const handleSubmit = (e) => {
@@ -335,7 +383,7 @@ const CourseForm = ({ course, mode, onClose }) => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-            <p className="text-gray-900">${course.price}</p>
+           <p className="text-gray-900">{Number(course.price).toLocaleString('vi-VN')}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Students</label>
