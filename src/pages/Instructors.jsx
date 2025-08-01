@@ -2,13 +2,30 @@ import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
-import { createInstructor, deleteInstructor, fetchInstructors, updateInstructor } from '../API/instructorApi';
+import { createInstructor, deleteInstructor, fetchEligibleUsers, fetchInstructors, updateInstructor } from '../API/instructorApi';
+import { v4 as uuidv4 } from 'uuid';
 
 const Instructors = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
   const [modalMode, setModalMode] = useState('create');
   const [instructors, setInstructors] = useState([]);
+
+  const [eligibleUsers, setEligibleUsers] = useState([]);
+
+  const loadEligibleUsers = async () => {
+    try {
+      const res = await fetchEligibleUsers();
+      setEligibleUsers(res.data);
+    } catch (err) {
+      console.error("Lỗi tải danh sách user đủ điều kiện:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadEligibleUsers();
+    loadData(); 
+  }, []);
 
   const loadData = async () => {
     try {
@@ -100,13 +117,20 @@ const Instructors = () => {
         title={modalMode === 'create' ? 'Create New Instructor' : modalMode === 'edit' ? 'Edit Instructor' : 'Instructor Details'}
         size="lg"
       >
-        <InstructorForm instructor={selectedInstructor} mode={modalMode} onClose={() => setIsModalOpen(false)} reload={loadData} />
+       <InstructorForm
+        instructor={selectedInstructor}
+        mode={modalMode}
+        onClose={() => setIsModalOpen(false)}
+        reload={loadData}
+        eligibleUsers={eligibleUsers}
+      />
+
       </Modal>
     </div>
   );
 };
 
-const InstructorForm = ({ instructor, mode, onClose, reload }) => {
+const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) => {
   const [formData, setFormData] = useState({
     name: instructor?.name || '',
     title: instructor?.title || '',
@@ -124,7 +148,27 @@ const InstructorForm = ({ instructor, mode, onClose, reload }) => {
     e.preventDefault();
     try {
       if (mode === 'create') {
-        await createInstructor(formData);
+        const newInstructor = {
+        userId: formData.id,            
+        name: formData.name,
+        title: formData.title,
+        bio: formData.bio,
+        website: formData.website,
+        twitter: formData.twitter,
+        linkedin: formData.linkedin,
+        youtube: formData.youtube,
+        expertises: formData.expertises,
+        isActive: formData.isActive,
+        profilePicture: formData.profilePicture || ''
+        
+      };
+      const res = await createInstructor(newInstructor);
+      if (res.data === true) {
+        onClose();
+        reload();
+      } else {
+        alert("Tạo instructor thất bại.");
+      }
       } else {
         await updateInstructor(instructor.id, formData);
       }
@@ -155,6 +199,21 @@ const InstructorForm = ({ instructor, mode, onClose, reload }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {mode === 'create' && (
+    <select
+      className="input w-full"
+      value={formData.id}
+      onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+      required
+    >
+      <option value="">-- Chọn user --</option>
+      {eligibleUsers.map(user => (
+        <option key={user.id} value={user.id}>
+          {user.name} ({user.email})
+        </option>
+      ))}
+    </select>
+  )}
       <div className="grid grid-cols-2 gap-4">
         <input type="text" className="input" placeholder="Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
         <input type="text" className="input" placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
