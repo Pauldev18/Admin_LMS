@@ -1,13 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
-import { mockInstructors } from '../data/mockData';
+import { createInstructor, deleteInstructor, fetchInstructors, updateInstructor } from '../API/instructorApi';
 
 const Instructors = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
   const [modalMode, setModalMode] = useState('create');
+  const [instructors, setInstructors] = useState([]);
+
+  const loadData = async () => {
+    try {
+      const res = await fetchInstructors();
+      setInstructors(res.data);
+    } catch (err) {
+      console.error("Lỗi tải danh sách instructors:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const columns = [
     {
@@ -27,44 +41,13 @@ const Instructors = () => {
         </div>
       )
     },
-    {
-      header: 'Email',
-      accessor: 'email'
-    },
-    {
-      header: 'Courses',
-      accessor: 'courses'
-    },
-    {
-      header: 'Students',
-      accessor: 'students',
-      render: (instructor) => instructor.students.toLocaleString()
-    },
-    {
-      header: 'Rating',
-      accessor: 'rating',
-      render: (instructor) => (
-        <div className="flex items-center space-x-1">
-          <span className="text-yellow-500">★</span>
-          <span>{instructor.rating}</span>
-        </div>
-      )
-    },
-    {
-      header: 'Revenue',
-      accessor: 'revenue',
-      render: (instructor) => `$${instructor.revenue.toLocaleString()}`
-    },
-    {
-      header: 'Status',
-      accessor: 'status',
-      render: (instructor) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          instructor.status === 'Active' ? 'bg-green-100 text-green-800' :
-          instructor.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          {instructor.status}
+    { header: 'Courses', accessor: 'totalCourses' },
+    { header: 'Students', accessor: 'numStudents', render: (i) => i.numStudents.toLocaleString() },
+    { header: 'Rating', accessor: 'rating', render: (i) => <span className="text-yellow-500">★ {i.rating}</span> },
+    { header: 'Reviews', accessor: 'numReviews' },
+    { header: 'Status', accessor: 'isActive', render: (i) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${i.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+          {i.isActive ? 'Active' : 'Inactive'}
         </span>
       )
     }
@@ -88,9 +71,16 @@ const Instructors = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (instructor) => {
-    if (confirm(`Are you sure you want to delete instructor "${instructor.name}"?`)) {
-      console.log('Deleting instructor:', instructor);
+  const handleDelete = async (instructor) => {
+    if (confirm(`Bạn có chắc chắn muốn xoá instructor "${instructor.name}"?`)) {
+      try {
+        await deleteInstructor(instructor.id);
+        alert('Đã xoá thành công!');
+        loadData();
+      } catch (error) {
+        console.error('Lỗi xoá:', error);
+        alert('Xoá thất bại!');
+      }
     }
   };
 
@@ -103,86 +93,61 @@ const Instructors = () => {
           Add Instructor
         </button>
       </div>
-
-      <DataTable
-        data={mockInstructors}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onView={handleView}
-      />
-
+      <DataTable data={instructors} columns={columns} onEdit={handleEdit} onDelete={handleDelete} onView={handleView} />
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={
-          modalMode === 'create' ? 'Create New Instructor' :
-          modalMode === 'edit' ? 'Edit Instructor' :
-          'Instructor Details'
-        }
+        title={modalMode === 'create' ? 'Create New Instructor' : modalMode === 'edit' ? 'Edit Instructor' : 'Instructor Details'}
         size="lg"
       >
-        <InstructorForm 
-          instructor={selectedInstructor} 
-          mode={modalMode}
-          onClose={() => setIsModalOpen(false)}
-        />
+        <InstructorForm instructor={selectedInstructor} mode={modalMode} onClose={() => setIsModalOpen(false)} reload={loadData} />
       </Modal>
     </div>
   );
 };
 
-const InstructorForm = ({ instructor, mode, onClose }) => {
+const InstructorForm = ({ instructor, mode, onClose, reload }) => {
   const [formData, setFormData] = useState({
     name: instructor?.name || '',
-    email: instructor?.email || '',
     title: instructor?.title || '',
     bio: instructor?.bio || '',
-    status: instructor?.status || 'Pending',
+    profilePicture: instructor?.profilePicture || '',
+    website: instructor?.website || '',
+    twitter: instructor?.twitter || '',
+    linkedin: instructor?.linkedin || '',
+    youtube: instructor?.youtube || '',
+    expertises: instructor?.expertises || '',
+    isActive: instructor?.isActive ?? true
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form data:', formData);
-    onClose();
+    try {
+      if (mode === 'create') {
+        await createInstructor(formData);
+      } else {
+        await updateInstructor(instructor.id, formData);
+      }
+      onClose();
+      reload();
+    } catch (err) {
+      console.error("Lỗi submit instructor:", err);
+      alert('Gửi thất bại!');
+    }
   };
 
   if (mode === 'view') {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <p className="text-gray-900">{instructor.name}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <p className="text-gray-900">{instructor.email}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <p className="text-gray-900">{instructor.title}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <p className="text-gray-900">{instructor.status}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Courses</label>
-            <p className="text-gray-900">{instructor.courses}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Students</label>
-            <p className="text-gray-900">{instructor.students.toLocaleString()}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-            <p className="text-gray-900">{instructor.rating} ⭐</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Revenue</label>
-            <p className="text-gray-900">${instructor.revenue.toLocaleString()}</p>
-          </div>
+          <p><b>Name:</b> {instructor.name}</p>
+          <p><b>Title:</b> {instructor.title}</p>
+          <p><b>Bio:</b> {instructor.bio}</p>
+          <p><b>Status:</b> {instructor.isActive ? 'Active' : 'Inactive'}</p>
+          <p><b>Courses:</b> {instructor.totalCourses}</p>
+          <p><b>Students:</b> {instructor.numStudents.toLocaleString()}</p>
+          <p><b>Rating:</b> {instructor.rating}</p>
+          <p><b>Reviews:</b> {instructor.numReviews}</p>
         </div>
       </div>
     );
@@ -191,68 +156,24 @@ const InstructorForm = ({ instructor, mode, onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="input"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="input"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Professional Title</label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => setFormData({...formData, title: e.target.value})}
-            className="input"
-            placeholder="e.g., Senior Full Stack Developer"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-            className="input"
-            required
-          >
-            <option value="Pending">Pending</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
+        <input type="text" className="input" placeholder="Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+        <input type="text" className="input" placeholder="Title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+        <input type="text" className="input" placeholder="Website" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+        <input type="text" className="input" placeholder="Twitter" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
+        <input type="text" className="input" placeholder="LinkedIn" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
+        <input type="text" className="input" placeholder="YouTube" value={formData.youtube} onChange={e => setFormData({...formData, youtube: e.target.value})} />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-        <textarea
-          value={formData.bio}
-          onChange={(e) => setFormData({...formData, bio: e.target.value})}
-          rows="4"
-          className="input"
-          placeholder="Brief bio about the instructor..."
-        />
+      <textarea className="input w-full" rows="3" placeholder="Bio" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})}></textarea>
+      <textarea className="input w-full" rows="2" placeholder="Expertises" value={formData.expertises} onChange={e => setFormData({...formData, expertises: e.target.value})}></textarea>
+      <div className="flex items-center space-x-3">
+        <label className="flex items-center space-x-2">
+          <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} />
+          <span className="text-sm">Active</span>
+        </label>
       </div>
       <div className="flex justify-end space-x-3 pt-4">
-        <button type="button" onClick={onClose} className="btn-secondary">
-          Cancel
-        </button>
-        <button type="submit" className="btn-primary">
-          {mode === 'create' ? 'Create Instructor' : 'Update Instructor'}
-        </button>
+        <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+        <button type="submit" className="btn-primary">{mode === 'create' ? 'Create Instructor' : 'Update Instructor'}</button>
       </div>
     </form>
   );
