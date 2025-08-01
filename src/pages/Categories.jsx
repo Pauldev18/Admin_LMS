@@ -1,8 +1,17 @@
-import { useState } from 'react';
-import { Plus, ChevronRight, ChevronDown, Folder, FolderOpen } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Plus, ChevronRight, ChevronDown, Folder, FolderOpen, FolderX } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
 import { mockCategories, getCategoryHierarchy, getFlatCategories } from '../data/mockData';
+import { createCategory, deleteCategory, fetchCategoryTree, updateCategory } from '../API/categoryApi';
+
+export const flattenTree = (nodes, level = 0) => {
+  return nodes.flatMap((node) => {
+    const flatNode = { ...node, level };
+    const children = flattenTree(node.children || [], level + 1);
+    return [flatNode, ...children];
+  });
+};
 
 const Categories = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,6 +19,23 @@ const Categories = () => {
   const [modalMode, setModalMode] = useState('create');
   const [viewMode, setViewMode] = useState('hierarchy'); // 'hierarchy' or 'table'
   const [expandedCategories, setExpandedCategories] = useState(new Set([1, 2, 3, 4])); // Default expanded
+
+  const [categoryTree, setCategoryTree] = useState([]);
+
+  const loadData = async () => {
+    try {
+      const data = await fetchCategoryTree();
+      setCategoryTree(data);
+    } catch (error) {
+      console.error('Lỗi khi load category tree:', error);
+    }
+  };
+  useEffect(() => {
+  loadData();
+}, []);
+
+
+
 
   const toggleExpanded = (categoryId) => {
     const newExpanded = new Set(expandedCategories);
@@ -46,31 +72,33 @@ const Categories = () => {
               <div className="w-6 mr-2" />
             )}
             
-            <div className="flex items-center mr-3">
-              {category.children && category.children.length > 0 ? (
-                expandedCategories.has(category.id) ? (
-                  <FolderOpen className="h-5 w-5 text-blue-500" />
-                ) : (
-                  <Folder className="h-5 w-5 text-blue-500" />
-                )
+            {!category.status ? (
+              <FolderX className="h-5 w-5 text-red-500" title="Category inactive" />
+            ) : category.children && category.children.length > 0 ? (
+              expandedCategories.has(category.id) ? (
+                <FolderOpen className="h-5 w-5 text-blue-500" />
               ) : (
-                <div className="h-5 w-5 bg-gray-300 rounded" />
-              )}
-            </div>
+                <Folder className="h-5 w-5 text-blue-500" />
+              )
+            ) : (
+              <Folder className="h-5 w-5 text-gray-400" />
+            )}
+
             
             <div className="flex-1">
               <div className="flex items-center space-x-3">
                 <span className="font-medium text-gray-900">{category.name}</span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {category.courseCount} courses
+                  {category.numCourse} courses
                 </span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  category.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  category.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                 }`}>
-                  {category.status}
+                  {category.status ? 'Active' : 'Inactive'}
                 </span>
+
               </div>
-              <p className="text-sm text-gray-500 mt-1">{category.description}</p>
+             
             </div>
           </div>
           
@@ -90,6 +118,17 @@ const Categories = () => {
             >
               <Plus className="h-4 w-4" />
             </button>
+
+             <button
+                onClick={() => handleDelete(category)}
+                className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
+                title="Delete"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
           </div>
         </div>
         
@@ -120,7 +159,7 @@ const Categories = () => {
               )}
               <span className="font-medium text-gray-900">{category.name}</span>
             </div>
-            <p className="text-sm text-gray-500 mt-1">{category.description}</p>
+            
           </div>
         </div>
       )
@@ -139,21 +178,22 @@ const Categories = () => {
       accessor: 'courseCount',
       render: (category) => (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {category.courseCount} courses
+          {category.numCourse} courses
         </span>
       )
     },
     {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'isActive',
       render: (category) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          category.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+          category.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
         }`}>
-          {category.status}
+          {category.status ? 'Active' : 'Inactive'}
         </span>
       )
     }
+
   ];
 
   const handleCreate = () => {
@@ -180,11 +220,19 @@ const Categories = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (category) => {
-    if (confirm(`Are you sure you want to delete category "${category.name}"?`)) {
-      console.log('Deleting category:', category);
-    }
-  };
+  const handleDelete = async (category) => {
+  const confirmed = confirm(`Bạn có chắc chắn muốn xoá danh mục "${category.name}"?`);
+  if (!confirmed) return;
+
+  try {
+    await deleteCategory(category.id);
+    alert('Xoá thành công!');
+    loadData(); 
+  } catch (error) {
+    console.error('Lỗi khi xoá danh mục:', error);
+    alert(error?.response?.data || 'Xoá thất bại');
+  }
+};
 
   return (
     <div className="space-y-6">
@@ -223,12 +271,12 @@ const Categories = () => {
       {viewMode === 'hierarchy' ? (
         <div className="card">
           <div className="space-y-2">
-            {renderCategoryTree(getCategoryHierarchy())}
+            {renderCategoryTree(categoryTree)}
           </div>
         </div>
       ) : (
         <DataTable
-          data={getFlatCategories()}
+         data={flattenTree(categoryTree)}
           columns={tableColumns}
           onEdit={handleEdit}
           onDelete={handleDelete}
@@ -246,40 +294,72 @@ const Categories = () => {
           'Category Details'
         }
       >
-        <CategoryForm 
+       <CategoryForm 
           category={selectedCategory} 
           mode={modalMode}
-          onClose={() => setIsModalOpen(false)}
+         onClose={() => {
+          setIsModalOpen(false);
+          loadData(); 
+        }}
+          categoryTree={categoryTree}
         />
+
       </Modal>
     </div>
   );
 };
 
-const CategoryForm = ({ category, mode, onClose }) => {
+const CategoryForm = ({ category, mode, onClose, categoryTree }) => {
+  const flatCategories = flattenTree(categoryTree);
+
+
+  const parentCategory = category?.parentId
+    ? flatCategories.find(c => c.id === category.parentId)
+    : null;
+
   const [formData, setFormData] = useState({
     name: category?.name || '',
-    description: category?.description || '',
-    parentId: category?.parentId || null,
-    status: category?.status || 'Active',
+    parentId: category?.parentId || null, 
+   status: category?.status !== undefined 
+    ? (category.status ? 'Active' : 'Inactive') 
+    : 'Active', 
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Form data:', formData);
-    onClose();
+  
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Chuyển đổi sang dạng backend yêu cầu
+  const payload = {
+    name: formData.name,
+    parentId: formData.parentId || null,
+    isActive: formData.status === 'Active'
   };
 
-  const getParentCategories = () => {
-    return mockCategories.filter(cat => 
-      cat.id !== category?.id && // Don't include self
-      cat.level < 2 // Only allow up to 2 levels deep
-    );
-  };
+  try {
+    if (mode === 'create') {
+      await createCategory(payload);
+    } else if (mode === 'edit' && category?.id) {
+      await updateCategory(category.id, payload);
+    }
+
+    onClose();
+  } catch (error) {
+    console.error('Lỗi khi gửi form:', error);
+    alert('Có lỗi xảy ra khi lưu category');
+  }
+};
+ const getParentCategories = () => {
+  return flattenTree(categoryTree).filter(cat => 
+    cat.id !== category?.id && cat.level < 2
+  );
+};
 
   if (mode === 'view') {
-    const parentCategory = category.parentId ? 
-      mockCategories.find(c => c.id === category.parentId) : null;
+   const parentCategory = category.parentId
+  ? flatCategories.find(c => c.id === category.parentId)
+  : null;
+
 
     return (
       <div className="space-y-4">
@@ -290,11 +370,12 @@ const CategoryForm = ({ category, mode, onClose }) => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              category.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-            }`}>
-              {category.status}
-            </span>
+           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            category.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+          }`}>
+            {category.status ? 'Active' : 'Inactive'}
+          </span>
+
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
@@ -302,86 +383,71 @@ const CategoryForm = ({ category, mode, onClose }) => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Course Count</label>
-            <p className="text-gray-900">{category.courseCount} courses</p>
+            <p className="text-gray-900">{category.numCourse} courses</p>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <p className="text-gray-900">{category.description}</p>
-        </div>
+       
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="input"
-            placeholder="e.g., Web Development"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-            className="input"
-            required
-          >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
-        </div>
-      </div>
-      
+  <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
-        <select
-          value={formData.parentId || ''}
-          onChange={(e) => setFormData({...formData, parentId: e.target.value || null})}
+        <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           className="input"
-        >
-          <option value="">Root Category</option>
-          {getParentCategories().map(cat => (
-            <option key={cat.id} value={cat.id}>
-              {'  '.repeat(cat.level)} {cat.name}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-500 mt-1">
-          Leave empty to create a root category, or select a parent for subcategory
-        </p>
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-        <textarea
-          value={formData.description}
-          onChange={(e) => setFormData({...formData, description: e.target.value})}
-          rows="3"
-          className="input"
-          placeholder="Brief description of the category..."
+          placeholder="e.g., Web Development"
           required
         />
       </div>
-      
-      <div className="flex justify-end space-x-3 pt-4">
-        <button type="button" onClick={onClose} className="btn-secondary">
-          Cancel
-        </button>
-        <button type="submit" className="btn-primary">
-          {mode === 'create' ? 'Create Category' : 'Update Category'}
-        </button>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <select
+          value={formData.status}
+          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+          className="input"
+          required
+        >
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
       </div>
-    </form>
-  );
+    </div>
+
+       {/* Cảnh báo validation */}
+    {flatCategories.some(cat => 
+      cat.name === formData.name && cat.id !== category?.id
+    ) && (
+      <p className="text-sm text-red-500">Tên danh mục đã tồn tại. Vui lòng chọn tên khác.</p>
+    )}
+
+    {formData.parentId === category?.id && (
+      <p className="text-sm text-red-500">Không thể chọn chính nó làm danh mục cha.</p>
+    )}
+
+    {formData.status === 'Inactive' && (
+      <div className="text-sm text-yellow-600 bg-yellow-100 px-3 py-2 rounded">
+        ⚠️ Việc chuyển danh mục sang <strong>Inactive</strong> sẽ vô hiệu hóa tất cả danh mục con của nó.
+      </div>
+    )}
+    {/* Buttons */}
+    <div className="flex justify-end space-x-3 pt-4">
+      <button type="button" onClick={onClose} className="btn-secondary">
+        Cancel
+      </button>
+      <button type="submit" className="btn-primary">
+        {mode === 'create' ? 'Create Category' : 'Update Category'}
+      </button>
+    </div>
+
+  </form>
+);
+
 };
 
 export default Categories;
