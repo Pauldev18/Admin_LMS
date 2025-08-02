@@ -16,14 +16,19 @@ const DataTable = ({
   const [itemsPerPage] = useState(10);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Filter data based on search term
-  const filteredData = data.filter(item =>
-    Object.values(item).some(value =>
-      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  // const filteredData = data.filter(item =>
+  //   Object.values(item).some(value =>
+  //     value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+  //   )
+  // );
+console.log("DataTable received:", data);
 
-  // Pagination
+  const filteredData = data.filter(item =>
+  Object.values(item).some(value =>
+    (value !== null && value !== undefined && value.toString().toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+);
+
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
@@ -36,8 +41,9 @@ const DataTable = ({
   };
 
   return (
-    <div className="card">
-      {/* Table Header */}
+    <div className="card min-h-screen flex flex-col">
+      
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
           {searchable && (
@@ -62,8 +68,8 @@ const DataTable = ({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="table">
+      <div className="overflow-auto flex-grow">
+        <table className="table w-full">
           <thead>
             <tr>
               {columns.map((column, index) => (
@@ -71,9 +77,7 @@ const DataTable = ({
                   {column.header}
                 </th>
               ))}
-              <th className="relative">
-                <span className="sr-only">Actions</span>
-              </th>
+              <th className="relative"><span className="sr-only">Actions</span></th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -136,8 +140,7 @@ const DataTable = ({
       {pagination && totalPages > 1 && (
         <div className="flex items-center justify-between mt-6">
           <div className="text-sm text-gray-700">
-            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of{' '}
-            {filteredData.length} results
+            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredData.length)} of {filteredData.length} results
           </div>
           <div className="flex space-x-2">
             <button

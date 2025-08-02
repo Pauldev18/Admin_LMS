@@ -1,13 +1,59 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
-import { mockUsers } from '../data/mockData';
+import { fetchUsers, createUser, updateUser, deleteUser } from '../API/userApi';
+import { toast } from 'react-toastify';
 
 const Users = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [modalMode, setModalMode] = useState('create');
+  const [users, setUsers] = useState([]);
+
+  const loadUsers = async () => {
+    try {
+      const res = await fetchUsers();
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Lỗi tải danh sách user:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const handleCreate = () => {
+    setModalMode('create');
+    setSelectedUser(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (user) => {
+    setModalMode('edit');
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleView = (user) => {
+    setModalMode('view');
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (user) => {
+    if (confirm(`Are you sure you want to delete user "${user.name}"?`)) {
+      try {
+        await deleteUser(user.id);
+        toast.success("User deleted!");
+        await loadUsers();
+      } catch (err) {
+        console.error("Lỗi xoá user:", err);
+         toast.error("Đã xảy ra lỗi!");
+      }
+    }
+  };
 
   const columns = [
     {
@@ -46,46 +92,17 @@ const Users = () => {
       render: (user) => new Date(user.joinDate).toLocaleDateString()
     },
     {
-      header: 'Last Login',
-      accessor: 'lastLogin',
-      render: (user) => new Date(user.lastLogin).toLocaleDateString()
-    },
-    {
       header: 'Status',
-      accessor: 'status',
+      accessor: 'active',
       render: (user) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+          user.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
         }`}>
-          {user.status}
+          {user.active ? 'Active' : 'Inactive'}
         </span>
       )
     }
   ];
-
-  const handleCreate = () => {
-    setModalMode('create');
-    setSelectedUser(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (user) => {
-    setModalMode('edit');
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleView = (user) => {
-    setModalMode('view');
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (user) => {
-    if (confirm(`Are you sure you want to delete user "${user.name}"?`)) {
-      console.log('Deleting user:', user);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -98,7 +115,7 @@ const Users = () => {
       </div>
 
       <DataTable
-        data={mockUsers}
+        data={users}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -114,58 +131,68 @@ const Users = () => {
           'User Details'
         }
       >
-        <UserForm 
-          user={selectedUser} 
+        <UserForm
+          user={selectedUser}
           mode={modalMode}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            loadUsers();
+          }}
         />
       </Modal>
     </div>
   );
 };
 
+// 🧩 FORM gộp chung luôn
 const UserForm = ({ user, mode, onClose }) => {
+  const isCreate = mode === 'create';
+  const isEdit = mode === 'edit';
+  const isView = mode === 'view';
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    role: user?.role || 'Student',
-    status: user?.status || 'Active',
+    role: user?.role || 'USER',
+    active: user?.active ?? true,
+    password: '',
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form data:', formData);
-    onClose();
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      role: formData.role,
+      isActive: formData.active,
+      ...(isCreate ? { password: formData.password } : {})
+    };
+
+    try {
+      if (isCreate) {
+        await createUser(payload);
+        toast.success("User created!");
+      } else if (isEdit) {
+        await updateUser(user.id, payload);
+        toast.success("User updated!");
+      }
+      onClose();
+    } catch (err) {
+      console.error('Lỗi submit user:', err);
+      toast.error("Đã xảy ra lỗi!");
+    }
   };
 
-  if (mode === 'view') {
+  if (isView) {
     return (
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <p className="text-gray-900">{user.name}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <p className="text-gray-900">{user.email}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <p className="text-gray-900">{user.role}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <p className="text-gray-900">{user.status}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Enrolled Courses</label>
-            <p className="text-gray-900">{user.enrolledCourses}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Join Date</label>
-            <p className="text-gray-900">{new Date(user.joinDate).toLocaleDateString()}</p>
-          </div>
+          <FormRead label="Name" value={user.name} />
+          <FormRead label="Email" value={user.email} />
+          <FormRead label="Role" value={user.role} />
+          <FormRead label="Status" value={user.active ? 'Active' : 'Inactive'} />
+          <FormRead label="Enrolled Courses" value={user.enrolledCourses} />
+          <FormRead label="Join Date" value={new Date(user.joinDate).toLocaleDateString()} />
         </div>
       </div>
     );
@@ -174,74 +201,64 @@ const UserForm = ({ user, mode, onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            className="input"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="input"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-          <select
-            value={formData.role}
-            onChange={(e) => setFormData({...formData, role: e.target.value})}
-            className="input"
-            required
-          >
-            <option value="Student">Student</option>
-            <option value="Instructor">Instructor</option>
-            <option value="Admin">Admin</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData({...formData, status: e.target.value})}
-            className="input"
-            required
-          >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="Suspended">Suspended</option>
-          </select>
-        </div>
+        <FormInput label="Full Name" value={formData.name} onChange={(val) => setFormData({ ...formData, name: val })} />
+        <FormInput label="Email" type="email" value={formData.email} onChange={(val) => setFormData({ ...formData, email: val })} />
+        <FormSelect label="Role" value={formData.role} onChange={(val) => setFormData({ ...formData, role: val })}
+          options={[
+            { label: 'User', value: 'USER' },
+            { label: 'Instructor', value: 'INSTRUCTOR' },
+            { label: 'Admin', value: 'ADMIN' }
+          ]}
+        />
+        <FormSelect label="Status" value={formData.active ? 'true' : 'false'} onChange={(val) => setFormData({ ...formData, active: val === 'true' })}
+          options={[
+            { label: 'Active', value: 'true' },
+            { label: 'Inactive', value: 'false' }
+          ]}
+        />
       </div>
-      {mode === 'create' && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-          <input
-            type="password"
-            className="input"
-            placeholder="Enter password"
-            required
-          />
-        </div>
+
+      {isCreate && (
+        <FormInput
+          label="Password"
+          type="password"
+          value={formData.password}
+          onChange={(val) => setFormData({ ...formData, password: val })}
+        />
       )}
+
       <div className="flex justify-end space-x-3 pt-4">
-        <button type="button" onClick={onClose} className="btn-secondary">
-          Cancel
-        </button>
+        <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
         <button type="submit" className="btn-primary">
-          {mode === 'create' ? 'Create User' : 'Update User'}
+          {isCreate ? 'Create User' : 'Update User'}
         </button>
       </div>
     </form>
   );
 };
+
+// 🔸 Component con nhỏ
+const FormInput = ({ label, value, onChange, type = 'text' }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="input" required />
+  </div>
+);
+
+const FormSelect = ({ label, value, onChange, options }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <select value={value} onChange={(e) => onChange(e.target.value)} className="input" required>
+      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+    </select>
+  </div>
+);
+
+const FormRead = ({ label, value }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <p className="text-gray-900">{value}</p>
+  </div>
+);
 
 export default Users;

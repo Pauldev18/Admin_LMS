@@ -7,6 +7,7 @@ import Instructors from './pages/Instructors';
 import Categories from './pages/Categories';
 import Reviews from './pages/Reviews';
 import Analytics from './pages/Analytics';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
@@ -22,6 +23,16 @@ function App() {
           <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </Layout>
+        <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
     </Router>
   );
 }
