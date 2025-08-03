@@ -8,6 +8,7 @@ import Categories from './pages/Categories';
 import Reviews from './pages/Reviews';
 import Analytics from './pages/Analytics';
 import { ToastContainer } from 'react-toastify';
+import VoucherManagement from './pages/VoucherManagement';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/categories" element={<Categories />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/vouchers" element={<VoucherManagement />} />
         </Routes>
       </Layout>
         <ToastContainer

@@ -8,7 +8,8 @@ import {
   Star, 
   BarChart3, 
   X,
-  GraduationCap
+  GraduationCap,
+  Ticket
 } from 'lucide-react';
 
 const navigation = [
@@ -19,6 +20,7 @@ const navigation = [
   { name: 'Categories', href: '/categories', icon: FolderOpen },
   { name: 'Reviews', href: '/reviews', icon: Star },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Vouchers', href: '/vouchers', icon: Ticket },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {
