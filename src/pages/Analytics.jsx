@@ -128,7 +128,7 @@ const exportToPDF = async () => {
     temp.style.inset          = '0';                 // top-0 right-0 bottom-0 left-0
     temp.style.width          = `${mm2px(210)}px`;   // 210 mm ≈ 794 px
     temp.style.minHeight      = `${mm2px(297)}px`;   // 297 mm ≈ 1123 px
-    temp.style.opacity        = '0';                 // ẩn
+    // temp.style.opacity        = '0';                 // ẩn
     temp.style.pointerEvents  = 'none';
     temp.style.zIndex         = '-1';
     document.body.appendChild(temp);
@@ -150,42 +150,31 @@ const exportToPDF = async () => {
       requestAnimationFrame(r)
     ));
 
-    /* 4. Chụp PNG */
     const dataUrl = await htmlToImage.toPng(temp, {
-      pixelRatio: 2,
-      backgroundColor: '#ffffff',
+      pixelRatio: 1.5,
+      backgroundColor: '#fff',
     });
 
-    /* 5. Thu dọn DOM tạm */
+    // 5. Cleanup
     root.unmount();
     document.body.removeChild(temp);
 
-    /* 6. Đưa vào jsPDF (auto chia trang) */
+    // 6. Đưa vào jsPDF (KHÔNG lặp addPage)
     const [{ default: jsPDF }] = await Promise.all([import('jspdf')]);
-    const pdf   = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'p' });
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'p' });
     const { width: pdfW, height: pdfH } = pdf.internal.pageSize;
 
-    const img   = new Image();
-    img.src     = dataUrl;
+    const img = new window.Image();
+    img.src = dataUrl;
     await img.decode();
 
-    const imgW  = pdfW;
-    const imgH  = (img.height * imgW) / img.width;
+    // Tính kích thước ảnh cho vừa A4, lề 10mm mỗi bên
+    const imgW = pdfW - 20; // trừ 10mm lề mỗi bên
+    const imgH = (img.height * imgW) / img.width;
 
-    let y       = 0;
-    let leftH   = imgH;
-
-    pdf.addImage(dataUrl, 'PNG', 0, y, imgW, imgH);
-    leftH -= pdfH;
-
-    while (leftH > 0) {
-      y = leftH - imgH;          // dịch ngược lên
-      pdf.addPage();
-      pdf.addImage(dataUrl, 'PNG', 0, y, imgW, imgH);
-      leftH -= pdfH;
-    }
-
-    pdf.save(`analytics-report-${new Date().toISOString().slice(0,10)}.pdf`);
+    // Nếu ảnh quá cao thì cũng chỉ addImage 1 lần (nếu vượt thì ảnh sẽ tự co vào trong trang)
+    pdf.addImage(dataUrl, 'PNG', 10, 0, imgW, imgH, undefined, 'FAST');
+    pdf.save(`analytics-report-${new Date().toISOString().slice(0, 10)}.pdf`);
   } catch (err) {
     console.error(err);
     alert('Xuất PDF thất bại!');
@@ -193,7 +182,6 @@ const exportToPDF = async () => {
     setExporting(false);
   }
 };
-
 
   if (loading) {
     return (
