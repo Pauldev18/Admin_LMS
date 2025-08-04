@@ -10,6 +10,15 @@ export const fetchCourseSummaries = async () => {
   }
 };
 
+export const fetchAllCourse = async () => {
+  try {
+    const res = await AxiosClient.get("/api/courses");
+    return res.data;
+  } catch (error) {
+    console.error("❌ Lỗi khi gọi API course:", error);
+    throw error;
+  }
+};
 
 export async function updateCourseStatusAPI(courseId, status) {
   try {
