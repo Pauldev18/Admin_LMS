@@ -4,6 +4,7 @@ import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
 import { useEffect } from 'react';
 import { fetchCourseSummaries, updateCourseStatusAPI } from '../API/courseApi';
+import Swal from 'sweetalert2';
 
 
 
@@ -167,16 +168,36 @@ const handleStatusChange = (course) => {
       setSelectedCourse(null);
     }
   };
+const handleDelete = async (course) => {
+  const result = await Swal.fire({
+    title: 'Xác nhận xoá?',
+    html: `Bạn có chắc chắn muốn xoá <b>${course.title}</b> không?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Xoá',
+    cancelButtonText: 'Huỷ',
+    reverseButtons: true
+  });
 
- const handleDelete = async (course) => {
-  if (confirm(`Bạn có chắc chắn muốn xoá "${course.title}" không?`)) {
+  if (result.isConfirmed) {
     try {
       console.log("Xoá khoá học:", course.id);
-      // Gọi API cập nhật trạng thái sang "ARCHIVED" hoặc "DISABLED"
       await updateCourseStatusAPI(course.id, 'DISABLED'); 
       await loadCourses(); // refresh lại danh sách
+      Swal.fire({
+        icon: 'success',
+        title: 'Đã xoá',
+        text: `Khoá học "${course.title}" đã được xoá.`,
+        timer: 1500,
+        showConfirmButton: false
+      });
     } catch (err) {
       console.error("❌ Xoá khoá học thất bại:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: 'Không thể xoá khoá học. Vui lòng thử lại!'
+      });
     }
   }
 };
@@ -201,10 +222,10 @@ const filteredCourses = courses.filter(course => {
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
               <option value="">All Status</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="DRAFT">Draft</option>
-              <option value="ARCHIVED">Archived</option>
-              <option value="DISABLED">Disabled</option>
+              <option value="PUBLISHED">Đã xuất bản</option>
+              <option value="DRAFT">Đang chờ duyệt</option>
+              <option value="ARCHIVED">Đã lưu trữ</option>
+              <option value="DISABLED">Đã xóa</option>
             </select>
 
             <select

@@ -45,3 +45,22 @@ export const fetchCategoryStats = async (startDate, endDate) => {
   });
   return res.data;
 };
+export async function fetchTopPerformingCourses({
+  months = 6,
+  sortBy = 'enrollments',
+  limit = 5,
+} = {}) {
+  const now = new Date();
+  const from = new Date();
+  from.setMonth(from.getMonth() - months);
+
+  const params = {
+    from: from.toISOString(),
+    to: now.toISOString(),
+    sortBy,
+    limit,
+  };
+
+  const { data } = await AxiosClient.get('/api/dashboard/top-performing', { params });
+  return data; 
+}

@@ -11,6 +11,7 @@ import {
   GraduationCap,
   Ticket
 } from 'lucide-react';
+import { MdPayment } from 'react-icons/md';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Reviews', href: '/reviews', icon: Star },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Vouchers', href: '/vouchers', icon: Ticket },
+  { name: 'Payments', href: '/payment', icon: MdPayment },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {

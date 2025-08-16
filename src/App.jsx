@@ -9,6 +9,7 @@ import Reviews from './pages/Reviews';
 import Analytics from './pages/Analytics';
 import { ToastContainer } from 'react-toastify';
 import VoucherManagement from './pages/VoucherManagement';
+import Payments from './pages/Payments';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/vouchers" element={<VoucherManagement />} />
+          <Route path="/payment" element={<Payments />} />
         </Routes>
       </Layout>
         <ToastContainer
