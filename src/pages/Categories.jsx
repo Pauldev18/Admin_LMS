@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Plus, ChevronRight, ChevronDown, Folder, FolderOpen, FolderX } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
-import { mockCategories, getCategoryHierarchy, getFlatCategories } from '../data/mockData';
 import { createCategory, deleteCategory, fetchCategoryTree, updateCategory } from '../API/categoryApi';
 
 export const flattenTree = (nodes, level = 0) => {
@@ -169,7 +168,7 @@ const Categories = () => {
       accessor: 'parentId',
       render: (category) => {
         if (!category.parentId) return <span className="text-gray-400">Root Category</span>;
-        const parent = mockCategories.find(c => c.id === category.parentId);
+        const parent = categoryTree.find(c => c.id === category.parentId);
         return parent ? parent.name : '-';
       }
     },
@@ -355,41 +354,63 @@ const handleSubmit = async (e) => {
   );
 };
 
-  if (mode === 'view') {
-   const parentCategory = category.parentId
-  ? flatCategories.find(c => c.id === category.parentId)
-  : null;
+ if (mode === 'view') {
+  const parentCategory = category.parentId
+    ? flatCategories.find(c => c.id === category.parentId)
+    : null;
 
+  return (
+    <div className="max-w-[700px]">
+      <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
+        <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
+          📂 Category Details
+        </h3>
 
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-            <p className="text-gray-900">{category.name}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <label className="block text-sm font-medium text-blue-600 mb-1">
+              Category Name
+            </label>
+            <p className="text-gray-900 font-medium">{category.name}</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            category.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-          }`}>
-            {category.status ? 'Active' : 'Inactive'}
-          </span>
 
+          <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <label className="block text-sm font-medium text-yellow-600 mb-1">
+              Status
+            </label>
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                category.status
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              {category.status ? 'Active' : 'Inactive'}
+            </span>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
-            <p className="text-gray-900">{parentCategory ? parentCategory.name : 'Root Category'}</p>
+
+          <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <label className="block text-sm font-medium text-purple-600 mb-1">
+              Parent Category
+            </label>
+            <p className="text-gray-900 font-medium">
+              {parentCategory ? parentCategory.name : 'Root Category'}
+            </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Course Count</label>
-            <p className="text-gray-900">{category.numCourse} courses</p>
+
+          <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
+            <label className="block text-sm font-medium text-pink-600 mb-1">
+              Course Count
+            </label>
+            <p className="text-gray-900 font-medium">
+              {category.numCourse} courses
+            </p>
           </div>
         </div>
-       
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
   <form onSubmit={handleSubmit} className="space-y-4">

@@ -9,9 +9,11 @@ import {
   BarChart3, 
   X,
   GraduationCap,
-  Ticket
+  Ticket,
+  Layers
 } from 'lucide-react';
 import { MdPayment } from 'react-icons/md';
+import { GiLever } from 'react-icons/gi';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
@@ -19,10 +21,12 @@ const navigation = [
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Instructors', href: '/instructors', icon: UserCheck },
   { name: 'Categories', href: '/categories', icon: FolderOpen },
+  { name: 'Level', href: '/levels', icon: Layers },
   { name: 'Reviews', href: '/reviews', icon: Star },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Vouchers', href: '/vouchers', icon: Ticket },
   { name: 'Payments', href: '/payment', icon: MdPayment },
+  
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {

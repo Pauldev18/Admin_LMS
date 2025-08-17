@@ -35,3 +35,6 @@ export const deleteUser = async (id) => {
     throw error;
   }
 };
+
+export const lockUser   = (id) => AxiosClient.put(`/api/users/${id}/lock`);
+export const unlockUser = (id) => AxiosClient.put(`/api/users/${id}/unlock`);

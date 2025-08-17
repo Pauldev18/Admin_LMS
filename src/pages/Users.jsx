@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Lock, Plus, Unlock } from 'lucide-react';
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
-import { fetchUsers, createUser, updateUser, deleteUser } from '../API/userApi';
+import { fetchUsers, createUser, updateUser, lockUser, unlockUser } from '../API/userApi';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 
 const Users = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,19 +43,38 @@ const Users = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (user) => {
-    if (confirm(`Are you sure you want to delete user "${user.name}"?`)) {
-      try {
-        await deleteUser(user.id);
-        toast.success("User deleted!");
-        await loadUsers();
-      } catch (err) {
-        console.error("Lỗi xoá user:", err);
-         toast.error("Đã xảy ra lỗi!");
+    const handleToggleActive = async (user) => {
+    const isCurrentlyActive = !!user.active;
+    const actionText = isCurrentlyActive ? "khóa" : "mở khóa";
+    const confirmBtnText = isCurrentlyActive ? "Khóa" : "Mở khóa";
+
+    const result = await Swal.fire({
+      title: `Xác nhận ${actionText}?`,
+      text: `Bạn có chắc chắn muốn ${actionText} user "${user.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: isCurrentlyActive ? "#d33" : "#16a34a", 
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: confirmBtnText,
+      cancelButtonText: "Huỷ",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      if (isCurrentlyActive) {
+        await lockUser(user.id);
+        toast.success("Đã khóa user!");
+      } else {
+        await unlockUser(user.id);
+        toast.success("Đã mở khóa user!");
       }
+      await loadUsers();
+    } catch (err) {
+      console.error("Lỗi cập nhật trạng thái user:", err);
+      toast.error("Đã xảy ra lỗi!");
     }
   };
-
   const columns = [
     {
       header: 'User',
@@ -115,12 +135,14 @@ const Users = () => {
       </div>
 
       <DataTable
-        data={users}
-        columns={columns}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onView={handleView}
-      />
+      data={users}
+      columns={columns}
+      onEdit={handleEdit}
+      onDelete={handleToggleActive} 
+      onView={handleView}
+      getDeleteLabel={(row) => (row.active ? 'Khóa' : 'Mở khóa')}
+      getDeleteIcon={(row) => (row.active ? Lock : Unlock)}
+    />
 
       <Modal
         isOpen={isModalOpen}
@@ -183,20 +205,68 @@ const UserForm = ({ user, mode, onClose }) => {
     }
   };
 
-  if (isView) {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <FormRead label="Name" value={user.name} />
-          <FormRead label="Email" value={user.email} />
-          <FormRead label="Role" value={user.role} />
-          <FormRead label="Status" value={user.active ? 'Active' : 'Inactive'} />
-          <FormRead label="Enrolled Courses" value={user.enrolledCourses} />
-          <FormRead label="Join Date" value={new Date(user.joinDate).toLocaleDateString()} />
+if (isView) {
+  return (
+    <div className="max-w-[120vw]">
+      <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-lg space-y-6">
+        <h3 className="text-xl font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+          <span>👤</span> Thông tin người dùng
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* mỗi item cần min-w-0 để truncate/break hoạt động trong grid */}
+          <div className="bg-blue-50 rounded-lg p-4 shadow-sm min-w-0">
+            <label className="block text-sm font-semibold text-blue-600 mb-1">Name</label>
+            <p className="text-gray-900 text-lg font-medium break-words">
+              {user.name}
+            </p>
+          </div>
+
+          <div className="bg-indigo-50 rounded-lg p-4 shadow-sm min-w-0">
+            <label className="block text-sm font-semibold text-indigo-600 mb-1">Email</label>
+            <p className="text-gray-900 break-words">
+              {user.email}
+            </p>
+          </div>
+
+          <div className="bg-green-50 rounded-lg p-4 shadow-sm min-w-0">
+            <label className="block text-sm font-semibold text-green-600 mb-1">Role</label>
+            <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+              user.role === 'ADMIN'
+                ? 'bg-red-100 text-red-700'
+                : user.role === 'INSTRUCTOR'
+                ? 'bg-purple-100 text-purple-700'
+                : 'bg-blue-100 text-blue-700'
+            }`}>
+              {user.role}
+            </span>
+          </div>
+
+          <div className="bg-yellow-50 rounded-lg p-4 shadow-sm min-w-0">
+            <label className="block text-sm font-semibold text-yellow-600 mb-1">Status</label>
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+              user.active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'
+            }`}>
+              {user.active ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+
+          <div className="bg-pink-50 rounded-lg p-4 shadow-sm min-w-0">
+            <label className="block text-sm font-semibold text-pink-600 mb-1">Enrolled Courses</label>
+            <p className="text-gray-900 break-words">{user.enrolledCourses}</p>
+          </div>
+
+          <div className="bg-orange-50 rounded-lg p-4 shadow-sm min-w-0">
+            <label className="block text-sm font-semibold text-orange-600 mb-1">Join Date</label>
+            <p className="text-gray-900">{new Date(user.joinDate).toLocaleDateString()}</p>
+          </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

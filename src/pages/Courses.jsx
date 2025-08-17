@@ -183,7 +183,7 @@ const handleDelete = async (course) => {
     try {
       console.log("Xoá khoá học:", course.id);
       await updateCourseStatusAPI(course.id, 'DISABLED'); 
-      await loadCourses(); // refresh lại danh sách
+      await loadCourses();
       Swal.fire({
         icon: 'success',
         title: 'Đã xoá',
@@ -250,7 +250,7 @@ const filteredCourses = courses.filter(course => {
       <DataTable
         data={filteredCourses}
         columns={columns}
-        onEdit={handleEdit}
+        // onEdit={handleEdit}
         onDelete={handleDelete}
         onView={handleView}
       />
@@ -383,52 +383,81 @@ const CourseForm = ({ course, mode, onClose }) => {
   };
 
   if (mode === 'view') {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <p className="text-gray-900">{course.title}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
-            <p className="text-gray-900">{course.instructor}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <p className="text-gray-900">{course.category}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Level</label>
-            <p className="text-gray-900">{course.level}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-           <p className="text-gray-900">{Number(course.price).toLocaleString('vi-VN')}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Students</label>
-            <p className="text-gray-900">{course.numStudents}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              course.status === 'Published' ? 'bg-green-100 text-green-800' :
-              course.status === 'Draft' ? 'bg-gray-100 text-gray-800' :
-              course.status === 'Under Review' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-red-100 text-red-800'
-            }`}>
-              {course.status}
-            </span>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-            <p className="text-gray-900">{course.rating} ⭐ ({course.numReviews} reviews)</p>
-          </div>
+  return (
+    <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-lg space-y-6">
+      <h3 className="text-xl font-bold text-gray-800 border-b pb-2">
+        📘 Thông tin khoá học
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Title */}
+        <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-blue-600 mb-1">Title</label>
+          <p className="text-gray-900 text-lg font-medium">{course.title}</p>
+        </div>
+
+        {/* Instructor */}
+        <div className="bg-indigo-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-indigo-600 mb-1">Instructor</label>
+          <p className="text-gray-900">{course.instructor}</p>
+        </div>
+
+        {/* Category */}
+        <div className="bg-green-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-green-600 mb-1">Category</label>
+          <p className="text-gray-900">{course.category}</p>
+        </div>
+
+        {/* Level */}
+        <div className="bg-purple-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-purple-600 mb-1">Level</label>
+          <p className="text-gray-900">{course.level}</p>
+        </div>
+
+        {/* Price */}
+        <div className="bg-pink-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-pink-600 mb-1">Price</label>
+          <p className="text-gray-900 font-bold">
+            {Number(course.price).toLocaleString('vi-VN')} đ
+          </p>
+        </div>
+
+        {/* Students */}
+        <div className="bg-yellow-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-yellow-600 mb-1">Students</label>
+          <p className="text-gray-900">{course.numStudents}</p>
+        </div>
+
+        {/* Status */}
+        <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-gray-600 mb-1">Status</label>
+          <span
+            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
+              course.status === 'Published'
+                ? 'bg-green-100 text-green-800'
+                : course.status === 'Draft'
+                ? 'bg-gray-200 text-gray-800'
+                : course.status === 'Under Review'
+                ? 'bg-yellow-100 text-yellow-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {course.status}
+          </span>
+        </div>
+
+        {/* Rating */}
+        <div className="bg-orange-50 rounded-lg p-4 shadow-sm">
+          <label className="block text-sm font-semibold text-orange-600 mb-1">Rating</label>
+          <p className="text-gray-900">
+            {course.rating ?? 0} ⭐ ({course.numReviews} reviews)
+          </p>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
