@@ -4,6 +4,7 @@ import { Eye, EyeOff, Shield } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { login } from "../API/authApi";
+import { resetAuthHandledFlag } from "../API/AxiosClient";
 
 const normalizeRole = (r) => String(r || "").replace(/^ROLE_/i, "").toUpperCase();
 
@@ -56,7 +57,7 @@ export default function AdminLogin() {
       });
       if (form.remember) localStorage.setItem("auth", payload);
       else sessionStorage.setItem("auth", payload);
-
+      resetAuthHandledFlag();
       toast.success("Đăng nhập thành công!");
       navigate("/admin", { replace: true });
     } catch (err) {
