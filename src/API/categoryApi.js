@@ -1,6 +1,6 @@
 import AxiosClient from "./AxiosClient";
 export const fetchCategoryTree = async () => {
-  const res = await AxiosClient.get('/api/categories/tree');
+  const res = await AxiosClient.get('/api/categories/treeAdmin');
   return res.data;
 };
 

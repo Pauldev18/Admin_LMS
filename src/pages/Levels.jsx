@@ -1,16 +1,16 @@
 // src/pages/Levels.jsx
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil } from "lucide-react";
 import {
   getLevels,
   createLevel,
   updateLevel,
-  deleteLevel,
+  toggleLevelStatus,
 } from "../API/levelApi";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-// Simple Modal inline (nếu bạn đã có <Modal/>, thay component này bằng Modal của bạn)
+// Simple Modal inline
 function Modal({ open, onClose, title, children }) {
   if (!open) return null;
   return (
@@ -39,7 +39,7 @@ export default function Levels() {
   const [debouncedQ, setDebouncedQ] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState(null); // null = create, object = edit
+  const [editing, setEditing] = useState(null);
 
   // debounce search
   useEffect(() => {
@@ -84,29 +84,34 @@ export default function Levels() {
     setModalOpen(true);
   };
 
- const handleDelete = async (lv) => {
-  const result = await Swal.fire({
-    title: "Xác nhận xoá?",
-    text: `Bạn có chắc chắn muốn xoá level "${lv.name}"?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
-    confirmButtonText: "Xoá",
-    cancelButtonText: "Huỷ",
-  });
+  const handleToggleStatus = async (lv) => {
+    const action = lv.isActive ? "xoá" : "khôi phục";
+    const confirm = await Swal.fire({
+      title: `Xác nhận ${action}?`,
+      text: `Bạn có chắc chắn muốn ${action} level "${lv.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: lv.isActive ? "#d33" : "#28a745",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: lv.isActive ? "Xoá" : "Khôi phục",
+      cancelButtonText: "Huỷ",
+    });
 
-  if (!result.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-  try {
-    await deleteLevel(lv.id);
-    await loadData();
-    Swal.fire("Đã xoá!", "Level đã được xoá thành công.", "success");
-  } catch (e) {
-    console.error("Delete level fail:", e);
-    Swal.fire("Lỗi", "Xoá thất bại!", "error");
-  }
-};
+    try {
+      await toggleLevelStatus(lv.id, !lv.isActive);
+      await loadData();
+      Swal.fire(
+        "Thành công!",
+        `Level đã được ${lv.isActive ? "xoá" : "khôi phục"} thành công.`,
+        "success"
+      );
+    } catch (e) {
+      console.error("Toggle status fail:", e);
+      Swal.fire("Lỗi", "Thao tác thất bại!", "error");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -142,19 +147,20 @@ export default function Levels() {
             <tr>
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 w-40">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
             {loading ? (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-gray-500">
                   Đang tải…
                 </td>
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-gray-500">
+                <td colSpan={4} className="px-4 py-6 text-center text-gray-500">
                   Không có dữ liệu
                 </td>
               </tr>
@@ -163,6 +169,17 @@ export default function Levels() {
                 <tr key={lv.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">{lv.id}</td>
                   <td className="px-4 py-3">{lv.name}</td>
+                  <td className="px-4 py-3">
+                    {lv.isActive ? (
+                      <span className="rounded bg-green-100 px-2 py-1 text-green-700">
+                        Active
+                      </span>
+                    ) : (
+                      <span className="rounded bg-red-100 px-2 py-1 text-red-700">
+                        Inactive
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <button
@@ -173,12 +190,17 @@ export default function Levels() {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(lv)}
-                        className="inline-flex items-center rounded-md border border-red-300 bg-red-50 px-2 py-1 text-red-600 hover:bg-red-100"
+                        onClick={() => handleToggleStatus(lv)}
+                        className={`inline-flex items-center rounded-md border px-2 py-1 leading-none whitespace-nowrap ${
+                          lv.isActive
+                            ? "border-red-600 text-red-600 hover:bg-red-50"
+                            : "border-green-600 text-green-600 hover:bg-green-50"
+                        }`}
                       >
-                        <Trash2 className="mr-1 h-4 w-4" />
-                        Delete
+                        {lv.isActive ? "Xoá" : "Khôi phục"}
                       </button>
+
+
                     </div>
                   </td>
                 </tr>

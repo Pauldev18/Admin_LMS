@@ -14,6 +14,7 @@ import Levels from './pages/Levels';
 import AdminLogin from './pages/AdminLogin';            
 import { ToastContainer } from 'react-toastify';
 import ProtectedRoute from './components/ProtectedRoute';
+import Messages from './pages/Messages';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/vouchers" element={<VoucherManagement />} />
             <Route path="/payment" element={<Payments />} />
             <Route path="/levels" element={<Levels />} />
+            <Route path="/messages" element={<Messages />} />
           </Route>
         </Route>
 

@@ -10,7 +10,8 @@ import {
   X,
   GraduationCap,
   Ticket,
-  Layers
+  Layers,
+  MessageSquare
 } from 'lucide-react';
 import { MdPayment } from 'react-icons/md';
 import { GiLever } from 'react-icons/gi';
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Vouchers', href: '/vouchers', icon: Ticket },
   { name: 'Payments', href: '/payment', icon: MdPayment },
+  { name: 'Messages', href: '/messages', icon: MessageSquare },
   
 ];
 
