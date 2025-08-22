@@ -35,7 +35,7 @@ export default function ProtectedRoute({ allow = ["ADMIN"] }) {
 
   const userRoles = getRoles(auth);
   const allowed = (Array.isArray(allow) ? allow : [allow]).map(normalizeRole);
-
+    
   const hasAccess = userRoles.some((r) => allowed.includes(normalizeRole(r)));
 
   if (!hasAccess) return <Navigate to="/403" replace />;
