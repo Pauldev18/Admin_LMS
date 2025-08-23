@@ -88,6 +88,7 @@ export default function Messages() {
           id: u.id,
           name: u.name,
           profilePicture: u.avatar,
+          role: u.role
         }));
         setChats(list);
 
@@ -138,12 +139,14 @@ export default function Messages() {
               ? chat.senderName || `User ${partnerId}`
               : chat.receiverName || `User ${partnerId}`,
           avatar: null,
+          role: chat.senderRole || chat.receiverRole || "USER",
         };
 
       setSelectedChat({
         id: partner.id,
         name: partner.name,
         profilePicture: partner.avatar,
+        role: partner.role,
       });
       setNguoiNhanId(partner.id);
       setCurrentChatId(chat.id);
@@ -294,7 +297,25 @@ export default function Messages() {
                   )}
                 </div>
                 <div className="ml-3 flex-1">
-                  <p className="font-bold text-gray-800">{chat.name}</p>
+                 <p className="font-bold text-gray-800 flex items-center gap-1">
+                    {chat.name}
+                    <span
+                      className={`
+                        text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase
+                        ${
+                          chat.role === "INSTRUCTOR"
+                            ? "bg-blue-100 text-blue-700"
+                            : chat.role === "ADMIN"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-600"
+                        }
+                      `}
+                    >
+                      {chat.role}
+                    </span>
+                  </p>
+
+
                 </div>
               </div>
             </button>
@@ -319,9 +340,24 @@ export default function Messages() {
                 )}
               </div>
               <div className="ml-3">
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                   {selectedChat.name}
+                  <span
+                    className={`
+                      text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase
+                      ${
+                        selectedChat.role === "INSTRUCTOR"
+                          ? "bg-blue-100 text-blue-700"
+                          : selectedChat.role === "ADMIN"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-600"
+                      }
+                    `}
+                  >
+                    {selectedChat.role}
+                  </span>
                 </h2>
+
                 {partnerTyping && selectedChat?.id === nguoiNhanId && (
                   <p className="text-sm text-gray-800 font-medium italic">
                     Đang nhập...
@@ -450,16 +486,23 @@ export default function Messages() {
                   placeholder="Type a message…"
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-1 form-input"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 text-sm"
+                  style={{ minHeight: "40px" }}
                 />
+
 
                 <button
                   onClick={handleSendMessage}
                   disabled={!message.trim() && !previewFile}
-                  className="p-2 text-primary-500 hover:text-primary-600 disabled:text-gray-400"
+                  className={`p-2 rounded-full transition-colors 
+                    ${message.trim() || previewFile
+                      ? "bg-primary-500 text-white hover:bg-primary-600"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
                 >
                   <FiSend className="h-5 w-5" />
                 </button>
+
               </div>
 
               {previewFile && (
