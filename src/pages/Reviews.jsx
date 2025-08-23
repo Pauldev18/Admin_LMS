@@ -24,7 +24,7 @@ const Reviews = () => {
  console.log("Fetched reviews:", reviews);
   const columns = [
     {
-      header: 'Course',
+      header: 'Khóa học',
       accessor: 'courseName',
       render: (review) => (
         <div>
@@ -34,7 +34,7 @@ const Reviews = () => {
       )
     },
     {
-      header: 'Rating',
+      header: 'Đánh giá',
       accessor: 'rating',
       render: (review) => (
         <div className="flex items-center space-x-1">
@@ -51,7 +51,7 @@ const Reviews = () => {
       )
     },
     {
-      header: 'Comment',
+      header: 'Bình luận',
       accessor: 'comment',
       render: (review) => (
         <p className="text-sm text-gray-600 truncate max-w-xs">
@@ -60,12 +60,12 @@ const Reviews = () => {
       )
     },
     {
-      header: 'Date',
+      header: 'Ngày bình luận',
       accessor: 'date',
       render: (review) => new Date(review.date).toLocaleDateString()
     },
     {
-      header: 'Status',
+      header: 'Trạng thái',
       accessor: 'status',
       render: (review) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -110,7 +110,7 @@ const handleReject = async (review) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Reviews</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Đánh giá</h1>
       </div>
 
       <DataTable
@@ -147,15 +147,15 @@ const ReviewDetails = ({ review, onApprove, onReject, onClose }) => {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Khóa học</label>
           <p className="text-gray-900">{review.courseName}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Học viên</label>
           <p className="text-gray-900">{review.studentName}</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Đánh giá</label>
           <div className="flex items-center space-x-1">
             {[...Array(5)].map((_, i) => (
               <span
@@ -169,13 +169,13 @@ const ReviewDetails = ({ review, onApprove, onReject, onClose }) => {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Ngày đánh giá</label>
           <p className="text-gray-900">{new Date(review.date).toLocaleDateString()}</p>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Bình luận</label>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-gray-900">{review.comment}</p>
         </div>
@@ -188,18 +188,18 @@ const ReviewDetails = ({ review, onApprove, onReject, onClose }) => {
             className="btn-success"
             disabled={review.status === 'APPROVED'}
           >
-            Approve
+            Chấp nhận
           </button>
           <button
             onClick={() => onReject(review)}
             className="btn-error"
             disabled={review.status === 'FLAGGED'}
           >
-            Reject
+            Từ chối
           </button>
         </div>
         <button onClick={onClose} className="btn-secondary">
-          Close
+          Hủy
         </button>
       </div>
     </div>

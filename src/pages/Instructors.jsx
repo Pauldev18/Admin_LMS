@@ -111,7 +111,7 @@ const Instructors = () => {
 
   const columns = [
     {
-      header: "Instructor",
+      header: "Giảng viên",
       accessor: "name",
       render: (instructor) => (
         <div className="flex items-center space-x-3">
@@ -139,22 +139,22 @@ const Instructors = () => {
         </div>
       ),
     },
-    { header: "Courses", accessor: "totalCourses" },
+    { header: "Số khóa học", accessor: "totalCourses" },
     {
-      header: "Students",
+      header: "Số học viên",
       accessor: "numStudents",
       render: (i) => (i.numStudents ?? 0).toLocaleString(),
     },
     {
-      header: "Rating",
+      header: "Đánh giá",
       accessor: "rating",
       render: (i) => (
         <span className="text-yellow-500">★ {i.rating ?? 0}</span>
       ),
     },
-    { header: "Reviews", accessor: "numReviews" },
+    { header: "Nhận xét", accessor: "numReviews" },
     {
-      header: "Status",
+      header: "Trạng thái",
       accessor: "isActive",
       render: (i) => (
         <span
@@ -189,7 +189,7 @@ const Instructors = () => {
   };
 
   const handleDelete = async (instructor) => {
-    if (confirm(`Bạn có chắc chắn muốn xoá instructor "${instructor.name}"?`)) {
+    if (confirm(`Bạn có chắc chắn muốn xoá giảng viên "${instructor.name}"?`)) {
       try {
         await deleteInstructor(instructor.id);
         alert("Đã xoá thành công!");
@@ -204,10 +204,10 @@ const Instructors = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Instructors</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Giảng viên</h1>
         <button onClick={handleCreate} className="btn-primary">
           <Plus className="h-4 w-4 mr-2" />
-          Add Instructor
+          Thêm hồ sơ giảng viên
         </button>
       </div>
 
@@ -224,10 +224,10 @@ const Instructors = () => {
         onClose={() => setIsModalOpen(false)}
         title={
           modalMode === "create"
-            ? "Create New Instructor"
+            ? "Thêm hồ sơ giảng viên"
             : modalMode === "edit"
-            ? "Edit Instructor"
-            : "Instructor Details"
+            ? "Cập nhật hồ sơ giảng viên"
+            : "Thông tin chi tiết giảng viên"
         }
         size="lg"
       >
@@ -291,9 +291,9 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
         if (res.data === true) {
           onClose();
           reload();
-          toast.success("Thêm instructor thành công");
+          toast.success("Thêm hồ sơ giảng viên thành công");
         } else {
-          toast.error("Tạo instructor thất bại.");
+          toast.error("Thêm hồ sơ thất bại.");
         }
       } else {
         await updateInstructor(instructor.id, payload);
@@ -318,26 +318,26 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">Name</span>
+              <span className="text-sm font-medium text-gray-500">Họ và tên</span>
               <span className="text-lg font-semibold text-gray-800">
                 {instructor.name}
               </span>
             </div>
 
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">Title</span>
+              <span className="text-sm font-medium text-gray-500">Chức danh</span>
               <span className="text-lg text-gray-800">{instructor.title}</span>
             </div>
 
             <div className="flex flex-col md:col-span-2">
-              <span className="text-sm font-medium text-gray-500">Bio</span>
+              <span className="text-sm font-medium text-gray-500">Tiểu sử</span>
               <p className="text-gray-700 leading-relaxed">
                 {instructor.bio || "—"}
               </p>
             </div>
 
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">Status</span>
+              <span className="text-sm font-medium text-gray-500">Trạng thái</span>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium w-fit ${
                   instructor.isActive
@@ -350,7 +350,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
             </div>
 
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">Courses</span>
+              <span className="text-sm font-medium text-gray-500">Số khóa học</span>
               <span className="text-gray-800 font-semibold">
                 {instructor.totalCourses ?? 0}
               </span>
@@ -358,7 +358,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
 
             <div className="flex flex-col">
               <span className="text-sm font-medium text-gray-500">
-                Students
+                Số học viên
               </span>
               <span className="text-gray-800 font-semibold">
                 {(instructor.numStudents ?? 0).toLocaleString()}
@@ -366,14 +366,14 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
             </div>
 
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">Rating</span>
+              <span className="text-sm font-medium text-gray-500">Lượt đánh giá</span>
               <span className="text-yellow-500 font-semibold">
                 ⭐ {instructor.rating ?? 0}
               </span>
             </div>
 
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-500">Reviews</span>
+              <span className="text-sm font-medium text-gray-500">Lượt nhận xét</span>
               <span className="text-gray-800 font-semibold">
                 {instructor.numReviews ?? 0}
               </span>
@@ -381,7 +381,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
 
             <div className="flex flex-col md:col-span-2">
               <span className="text-sm font-medium text-gray-500">
-                Expertises
+                Kỹ năng
               </span>
               {viewExpertises.length ? (
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -431,7 +431,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Name
+            Họ và tên
           </label>
           <input
             type="text"
@@ -444,7 +444,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Title
+            Chức danh
           </label>
           <input
             type="text"
@@ -514,7 +514,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Bio
+          Tiểu sử
         </label>
         <textarea
           className="input w-full"
@@ -526,7 +526,7 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Expertises
+          Kỹ năng
         </label>
         <TagsInput value={expertisesArr} onChange={setExpertisesArr} />
         <p className="mt-1 text-xs text-gray-400">
@@ -548,10 +548,10 @@ const InstructorForm = ({ instructor, mode, onClose, reload, eligibleUsers }) =>
 
       <div className="flex justify-end gap-3 pt-4">
         <button type="button" onClick={onClose} className="btn-secondary">
-          Cancel
+          Hủy
         </button>
         <button type="submit" className="btn-primary">
-          {mode === "create" ? "Create Instructor" : "Update Instructor"}
+          {mode === "create" ? "Thêm hồ sơ giảng viên" : "Cập nhật hồ sơ"}
         </button>
       </div>
     </form>

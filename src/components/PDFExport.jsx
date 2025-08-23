@@ -51,15 +51,15 @@ const PDFExport = ({
   const getDateRangeText = () => {
     switch (dateRange) {
       case "30":
-        return "Last 30 days";
+        return "30 ngày qua";
       case "90":
-        return "Last 3 months";
+        return "3 tháng qua";
       case "180":
-        return "Last 6 months";
+        return "6 tháng qua";
       case "365":
-        return "Last year";
+        return "1 năm qua";
       default:
-        return "Last 30 days";
+        return "30 ngày qua";
     }
   };
 
@@ -100,10 +100,10 @@ const PDFExport = ({
             color: "#333",
           }}
         >
-          Analytics Report
+          Báo cáo phân tích
         </h1>
         <p style={{ fontSize: "14px", color: "#666", margin: 0 }}>
-          {getDateRangeText()} • Generated on {new Date().toLocaleDateString()}
+          {getDateRangeText()} • Được tạo vào {new Date().toLocaleDateString()}
         </p>
       </div>
 
@@ -119,7 +119,7 @@ const PDFExport = ({
         {/** Total Revenue */}
         <MetricCard
           icon={<DollarSign size={16} color="#10b981" />}
-          title="Total Revenue"
+          title="Tổng doanh thu"
           value={analyticsData ? formatCurrency(analyticsData.totalRevenue) : "$0"}
           change={analyticsData?.revenueGrowthPercent ?? 0}
           color="#10b981"
@@ -128,7 +128,7 @@ const PDFExport = ({
         {/** Total Enrollments */}
         <MetricCard
           icon={<Users size={16} color="#3b82f6" />}
-          title="Total Enrollments"
+          title="Tổng số tuyển sinh"
           value={analyticsData ? formatNumber(analyticsData.totalEnrollments) : "0"}
           change={analyticsData?.enrollmentGrowthPercent ?? 0}
           color="#3b82f6"
@@ -137,7 +137,7 @@ const PDFExport = ({
         {/** Average Rating */}
         <MetricCard
           icon={<BookOpen size={16} color="#8b5cf6" />}
-          title="Average Rating"
+          title="Đánh giá trung bình"
           value={analyticsData ? analyticsData.averageRating.toFixed(1) : "0.0"}
           change={analyticsData?.ratingGrowthPercent ?? 0}
           color="#8b5cf6"
@@ -146,7 +146,7 @@ const PDFExport = ({
         {/** Growth Overview */}
         <MetricCard
           icon={<TrendingUp size={16} color="#f59e0b" />}
-          title="Growth Overview"
+          title="Tổng quan về tăng trưởng"
           value={`${analyticsData?.revenueGrowthPercent >= 0 ? "+" : ""}$${
             (analyticsData?.revenueGrowthPercent ?? 0).toFixed(1)
           }%`}
@@ -156,7 +156,7 @@ const PDFExport = ({
       </div>
 
       {/******** Revenue & User Trends ********/}
-      <SectionTitle>Revenue & User Trends</SectionTitle>
+      <SectionTitle>Xu hướng doanh thu và người dùng</SectionTitle>
       <div
         style={{
           display: "grid",
@@ -166,7 +166,7 @@ const PDFExport = ({
         }}
       >
         {/* Revenue Trend */}
-        <ChartCard title="Revenue Trend">
+        <ChartCard title="Xu hướng doanh thu">
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={processChartData(monthlyData)}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -197,7 +197,7 @@ const PDFExport = ({
         </ChartCard>
 
         {/* User Growth */}
-        <ChartCard title="User Growth">
+        <ChartCard title="Tăng trưởng người dùng">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={processChartData(monthlyData)}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -227,7 +227,7 @@ const PDFExport = ({
         }}
       >
         {/* Category Pie */}
-        <ChartCard title="Course Categories Distribution">
+        <ChartCard title="Phân bổ danh mục khóa học">
           <ResponsiveContainer width="100%" height={300}>
             {categoryData?.some((i) => i.value > 0) ? (
               <PieChart>
@@ -254,22 +254,22 @@ const PDFExport = ({
                 <Tooltip formatter={(v, n) => [v, n]} />
               </PieChart>
             ) : (
-              <EmptyChartPlaceholder>No category data</EmptyChartPlaceholder>
+              <EmptyChartPlaceholder>Không có dữ liệu danh mục</EmptyChartPlaceholder>
             )}
           </ResponsiveContainer>
         </ChartCard>
 
         {/* Growth Metrics */}
-        <ChartCard title="Growth Metrics">
+        <ChartCard title="Số liệu tăng trưởng">
           <GrowthItem
-            label="Revenue Growth"
+            label="Tăng trưởng doanh thu"
             value={analyticsData?.revenueGrowthPercent ?? 0}
           />
           <GrowthItem
-            label="Enrollment Growth"
+            label="Tăng trưởng tuyển sinh"
             value={analyticsData?.enrollmentGrowthPercent ?? 0}
           />
-          <GrowthItem label="Rating Growth" value={analyticsData?.ratingGrowthPercent ?? 0} />
+          <GrowthItem label="Xếp hạng tăng trưởng" value={analyticsData?.ratingGrowthPercent ?? 0} />
         </ChartCard>
       </div>
     </div>
@@ -293,7 +293,7 @@ const MetricCard = ({ icon, title, value, change, color }) => (
     <div style={{ fontSize: 18, fontWeight: "bold", color }}>{value}</div>
     <div style={{ fontSize: 12, color: "#666" }}>
       {change >= 0 ? "+" : ""}
-      {change.toFixed(1)}% from previous period
+      {change.toFixed(1)}% so với kỳ trước
     </div>
   </div>
 );

@@ -109,7 +109,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Trang quản lý</h1>
         <div className="flex space-x-3">
         </div>
       </div>
@@ -117,7 +117,7 @@ const Dashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Courses"
+          title="Tổng số khóa học"
           value={dashboardStats.totalCourses}
           change={dashboardStats.courseGrowth ?? 0}
           changeType="increase"
@@ -125,7 +125,7 @@ const Dashboard = () => {
           color="blue"
         />
         <StatsCard
-          title="Total Users"
+          title="Tổng số người dùng"
           value={dashboardStats.totalUsers.toLocaleString()}
           change={dashboardStats.userGrowth ?? 0}
           changeType="increase"
@@ -133,7 +133,7 @@ const Dashboard = () => {
           color="green"
         />
         <StatsCard
-          title="Total Instructors"
+          title="Tổng số giảng viên"
           value={dashboardStats.totalInstructors}
           change={dashboardStats.instructorGrowth ?? 0}
           changeType="increase"
@@ -141,7 +141,7 @@ const Dashboard = () => {
           color="purple"
         />
         <StatsCard
-          title="Total Revenue"
+          title="Tổng doanh thu"
           value={dashboardStats.totalRevenue.toLocaleString()} 
           change={dashboardStats.revenueGrowth ?? 0}
           changeType="increase"
@@ -153,7 +153,7 @@ const Dashboard = () => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">User Growth</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tăng trưởng người dùng</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -166,7 +166,7 @@ const Dashboard = () => {
         </div>
 
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Enrollment</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Đăng ký khóa học</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -183,7 +183,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Enrollments */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Enrollments</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ghi danh gần đây</h3>
           <div className="space-y-3">
             {recentEnrollments.map((item, idx) => (
               <div key={idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -192,7 +192,8 @@ const Dashboard = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">
-                    {item.userName} enrolled in {item.courseTitle}
+                    <span className="font-bold">{item.userName}</span> ghi danh vào khóa học{' '}
+                    <span className="font-bold">{item.courseTitle}</span>
                   </p>
                   <p className="text-xs text-gray-500">
                     {new Date(item.enrolledAt).toLocaleString('vi-VN')}
@@ -207,7 +208,7 @@ const Dashboard = () => {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">
-              Top Performing Courses <span className="ml-2 text-sm text-gray-500">({monthLabel})</span>
+              Các khóa học có hiệu suất hàng đầu <span className="ml-2 text-sm text-gray-500">({monthLabel})</span>
             </h3>
 
             <div className="flex items-center gap-2">
@@ -218,10 +219,10 @@ const Dashboard = () => {
                 className="border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring"
                 aria-label="Sắp xếp theo"
               >
-                <option value="enrollments">Enrollments</option>
-                <option value="rating">Rating</option>
-                <option value="active">Active learners</option>
-                <option value="reviews">Reviews</option>
+                <option value="enrollments">Lượt ghi danh</option>
+                <option value="rating">Đánh giá</option>
+                <option value="active">Người học</option>
+                <option value="reviews">Nhận xét</option>
               </select>
 
               {/* months */}

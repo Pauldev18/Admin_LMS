@@ -117,13 +117,13 @@ export default function Levels() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Levels</h1>
+        <h1 className="text-2xl font-bold">Trình độ</h1>
         <button
           onClick={openCreate}
           className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Level
+          Thêm loại trình độ
         </button>
       </div>
 
@@ -146,9 +146,9 @@ export default function Levels() {
           <thead className="bg-gray-50 text-left text-sm font-semibold text-gray-700">
             <tr>
               <th className="px-4 py-3">ID</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 w-40">Actions</th>
+              <th className="px-4 py-3">Tên</th>
+              <th className="px-4 py-3">Trạng thái</th>
+              <th className="px-4 py-3 w-40">Hành động</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
@@ -187,7 +187,7 @@ export default function Levels() {
                         className="inline-flex items-center rounded-md border border-gray-300 bg-white px-2 py-1 text-gray-700 hover:bg-gray-100"
                       >
                         <Pencil className="mr-1 h-4 w-4" />
-                        Edit
+                        Sửa
                       </button>
                       <button
                         onClick={() => handleToggleStatus(lv)}
@@ -214,7 +214,7 @@ export default function Levels() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editing ? "Edit Level" : "Create Level"}
+        title={editing ? "Sửa loại trình độ" : "Thêm loại trình độ"}
       >
         <LevelForm
           editing={editing}
@@ -261,7 +261,7 @@ function LevelForm({ editing, onClose, afterSubmit }) {
     <form onSubmit={onSubmit} className="space-y-5">
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700">
-          Name
+          Tên trình độ
         </label>
         <input
           className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
@@ -278,14 +278,14 @@ function LevelForm({ editing, onClose, afterSubmit }) {
           className="rounded-lg border border-gray-300 px-4 py-2 hover:bg-gray-50"
           disabled={submitting}
         >
-          Cancel
+          Hủy
         </button>
         <button
           type="submit"
           className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-60"
           disabled={submitting}
         >
-          {submitting ? "Saving..." : editing ? "Update" : "Create"}
+          {submitting ? "Đang lưu..." : editing ? "Cập nhật" : "Thêm"}
         </button>
       </div>
     </form>

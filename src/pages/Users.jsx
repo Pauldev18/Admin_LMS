@@ -77,7 +77,7 @@ const Users = () => {
   };
   const columns = [
     {
-      header: 'User',
+      header: 'Người dùng',
       accessor: 'name',
       render: (user) => (
         <div className="flex items-center space-x-3">
@@ -94,7 +94,7 @@ const Users = () => {
       )
     },
     {
-      header: 'Role',
+      header: 'Quyền',
       accessor: 'role',
       render: (user) => (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -102,17 +102,23 @@ const Users = () => {
         </span>
       )
     },
+   {
+    header: 'Số khóa học đã đăng ký',
+    accessor: 'enrolledCourses',
+    render: (course) => (
+      <div className="w-full text-center">
+        {course.enrolledCourses}
+      </div>
+    ),
+  }
+  ,
     {
-      header: 'Enrolled Courses',
-      accessor: 'enrolledCourses'
-    },
-    {
-      header: 'Join Date',
+      header: 'Ngày tham gia',
       accessor: 'joinDate',
       render: (user) => new Date(user.joinDate).toLocaleDateString()
     },
     {
-      header: 'Status',
+      header: 'Trạng thái',
       accessor: 'active',
       render: (user) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -127,10 +133,10 @@ const Users = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Users</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Người dùng</h1>
         <button onClick={handleCreate} className="btn-primary">
           <Plus className="h-4 w-4 mr-2" />
-          Add User
+          Thêm người dùng
         </button>
       </div>
 
@@ -148,9 +154,9 @@ const Users = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={
-          modalMode === 'create' ? 'Create New User' :
-          modalMode === 'edit' ? 'Edit User' :
-          'User Details'
+          modalMode === 'create' ? 'Thêm mới người dùng' :
+          modalMode === 'edit' ? 'Sửa thông tin người dùng' :
+          'Thông tin chi tiêt'
         }
       >
         <UserForm
@@ -193,10 +199,10 @@ const UserForm = ({ user, mode, onClose }) => {
     try {
       if (isCreate) {
         await createUser(payload);
-        toast.success("User created!");
+        toast.success("Thêm thành công!");
       } else if (isEdit) {
         await updateUser(user.id, payload);
-        toast.success("User updated!");
+        toast.success("Cập nhật thành công!");
       }
       onClose();
     } catch (err) {
@@ -216,7 +222,7 @@ if (isView) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* mỗi item cần min-w-0 để truncate/break hoạt động trong grid */}
           <div className="bg-blue-50 rounded-lg p-4 shadow-sm min-w-0">
-            <label className="block text-sm font-semibold text-blue-600 mb-1">Name</label>
+            <label className="block text-sm font-semibold text-blue-600 mb-1">Tên</label>
             <p className="text-gray-900 text-lg font-medium break-words">
               {user.name}
             </p>
@@ -230,7 +236,7 @@ if (isView) {
           </div>
 
           <div className="bg-green-50 rounded-lg p-4 shadow-sm min-w-0">
-            <label className="block text-sm font-semibold text-green-600 mb-1">Role</label>
+            <label className="block text-sm font-semibold text-green-600 mb-1">Quyền</label>
             <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
               user.role === 'ADMIN'
                 ? 'bg-red-100 text-red-700'
@@ -243,7 +249,7 @@ if (isView) {
           </div>
 
           <div className="bg-yellow-50 rounded-lg p-4 shadow-sm min-w-0">
-            <label className="block text-sm font-semibold text-yellow-600 mb-1">Status</label>
+            <label className="block text-sm font-semibold text-yellow-600 mb-1">Trạng thái</label>
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
               user.active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'
             }`}>
@@ -252,12 +258,12 @@ if (isView) {
           </div>
 
           <div className="bg-pink-50 rounded-lg p-4 shadow-sm min-w-0">
-            <label className="block text-sm font-semibold text-pink-600 mb-1">Enrolled Courses</label>
+            <label className="block text-sm font-semibold text-pink-600 mb-1">Số khóa học đã đăng ký</label>
             <p className="text-gray-900 break-words">{user.enrolledCourses}</p>
           </div>
 
           <div className="bg-orange-50 rounded-lg p-4 shadow-sm min-w-0">
-            <label className="block text-sm font-semibold text-orange-600 mb-1">Join Date</label>
+            <label className="block text-sm font-semibold text-orange-600 mb-1">Ngày tham gia</label>
             <p className="text-gray-900">{new Date(user.joinDate).toLocaleDateString()}</p>
           </div>
         </div>
@@ -271,16 +277,16 @@ if (isView) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <FormInput label="Full Name" value={formData.name} onChange={(val) => setFormData({ ...formData, name: val })} />
+        <FormInput label="Họ và tên" value={formData.name} onChange={(val) => setFormData({ ...formData, name: val })} />
         <FormInput label="Email" type="email" value={formData.email} onChange={(val) => setFormData({ ...formData, email: val })} />
-        <FormSelect label="Role" value={formData.role} onChange={(val) => setFormData({ ...formData, role: val })}
+        <FormSelect label="Quyền" value={formData.role} onChange={(val) => setFormData({ ...formData, role: val })}
           options={[
             { label: 'User', value: 'USER' },
             { label: 'Instructor', value: 'INSTRUCTOR' },
             { label: 'Admin', value: 'ADMIN' }
           ]}
         />
-        <FormSelect label="Status" value={formData.active ? 'true' : 'false'} onChange={(val) => setFormData({ ...formData, active: val === 'true' })}
+        <FormSelect label="Trạng thái" value={formData.active ? 'true' : 'false'} onChange={(val) => setFormData({ ...formData, active: val === 'true' })}
           options={[
             { label: 'Active', value: 'true' },
             { label: 'Inactive', value: 'false' }
@@ -290,7 +296,7 @@ if (isView) {
 
       {isCreate && (
         <FormInput
-          label="Password"
+          label="Mật khẩu"
           type="password"
           value={formData.password}
           onChange={(val) => setFormData({ ...formData, password: val })}
@@ -298,9 +304,9 @@ if (isView) {
       )}
 
       <div className="flex justify-end space-x-3 pt-4">
-        <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
+        <button type="button" onClick={onClose} className="btn-secondary">Hủy</button>
         <button type="submit" className="btn-primary">
-          {isCreate ? 'Create User' : 'Update User'}
+          {isCreate ? 'Thêm người dùng' : 'Cập nhật'}
         </button>
       </div>
     </form>

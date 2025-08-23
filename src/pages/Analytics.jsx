@@ -186,7 +186,7 @@ const exportToPDF = async () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600">Loading analytics data...</div>
+        <div className="text-lg text-gray-600">Đang tải dữ liệu...</div>
       </div>
     );
   }
@@ -202,17 +202,17 @@ const exportToPDF = async () => {
   return (
     <div className="space-y-6" ref={contentRef}>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Phân tích/Thống kê</h1>
                  <div className="flex space-x-3">
            <select 
              className="input w-auto"
              value={dateRange}
              onChange={(e) => setDateRange(e.target.value)}
            >
-             <option value="30">Last 30 days</option>
-             <option value="90">Last 3 months</option>
-             <option value="180">Last 6 months</option>
-             <option value="365">Last year</option>
+             <option value="30">30 ngày qua</option>
+             <option value="90">3 tháng qua</option>
+             <option value="180">6 tháng qua</option>
+             <option value="365">1 năm qua</option>
            </select>
            
            <button 
@@ -221,7 +221,7 @@ const exportToPDF = async () => {
              disabled={exporting}
            >
              <Download size={16} />
-             <span>{exporting ? 'Exporting...' : 'Export PDF'}</span>
+             <span>{exporting ? 'Đang xuất...' : 'Xuất PDF'}</span>
            </button>
          </div>
       </div>
@@ -229,7 +229,7 @@ const exportToPDF = async () => {
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatsCard
-          title="Total Revenue"
+          title="Tổng doanh thu"
           value={analyticsData ? formatCurrency(analyticsData.totalRevenue) : '$0'}
           change={analyticsData?.revenueGrowthPercent || 0}
           changeType={analyticsData?.revenueGrowthPercent >= 0 ? "increase" : "decrease"}
@@ -237,7 +237,7 @@ const exportToPDF = async () => {
           color="green"
         />
         <StatsCard
-          title="Total Enrollments"
+          title="Tổng số học viên"
           value={analyticsData ? formatNumber(analyticsData.totalEnrollments) : '0'}
           change={analyticsData?.enrollmentGrowthPercent || 0}
           changeType={analyticsData?.enrollmentGrowthPercent >= 0 ? "increase" : "decrease"}
@@ -245,7 +245,7 @@ const exportToPDF = async () => {
           color="blue"
         />
         <StatsCard
-          title="Average Rating"
+          title="Đánh giá trung bình"
           value={analyticsData ? analyticsData.averageRating.toFixed(1) : '0.0'}
           change={analyticsData?.ratingGrowthPercent || 0}
           changeType={analyticsData?.ratingGrowthPercent >= 0 ? "increase" : "decrease"}
@@ -253,7 +253,7 @@ const exportToPDF = async () => {
           color="purple"
         />
         <StatsCard
-          title="Growth Overview"
+          title="Tổng quan về tăng trưởng"
           value={`${analyticsData?.revenueGrowthPercent >= 0 ? '+' : ''}${analyticsData?.revenueGrowthPercent?.toFixed(1) || 0}%`}
           change={analyticsData?.revenueGrowthPercent || 0}
           changeType={analyticsData?.revenueGrowthPercent >= 0 ? "increase" : "decrease"}
@@ -265,8 +265,8 @@ const exportToPDF = async () => {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  <div className="card">
-                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
-           <ResponsiveContainer width="100%" height={300}>
+                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Xu hướng doanh thu</h3>
+            <ResponsiveContainer width="100%" height={300}>
                           <AreaChart data={processChartData(monthlyData)}>
                <CartesianGrid strokeDasharray="3 3" />
                <XAxis dataKey="month" />
@@ -294,7 +294,7 @@ const exportToPDF = async () => {
         </div>
 
                  <div className="card">
-                       <h3 className="text-lg font-semibold text-gray-900 mb-4">User Growth</h3>
+                       <h3 className="text-lg font-semibold text-gray-900 mb-4">Tăng trưởng người dùng</h3>
            <ResponsiveContainer width="100%" height={300}>
                           <BarChart data={processChartData(monthlyData)}>
                <CartesianGrid strokeDasharray="3 3" />
@@ -325,7 +325,7 @@ const exportToPDF = async () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Categories Distribution</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Phân bổ danh mục khóa học</h3>
           <ResponsiveContainer width="100%" height={300}>
             {categoryData && categoryData.length > 0 && categoryData.filter(item => item.value > 0).length > 0 ? (
               <PieChart>
@@ -351,8 +351,8 @@ const exportToPDF = async () => {
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <p className="text-gray-500 text-lg">No category data available</p>
-                  <p className="text-gray-400 text-sm">Try selecting a different date range</p>
+                  <p className="text-gray-500 text-lg">Không có dữ liệu danh mục</p>
+                  <p className="text-gray-400 text-sm">Hãy thử chọn một phạm vi ngày khác</p>
                 </div>
               </div>
             )}
@@ -360,44 +360,44 @@ const exportToPDF = async () => {
         </div>
 
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Growth Metrics</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Số liệu tăng trưởng</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-medium text-gray-900">Revenue Growth</p>
-                <p className="text-sm text-gray-500">Percentage change in revenue</p>
+                <p className="font-medium text-gray-900">Tăng trưởng doanh thu</p>
+                <p className="text-sm text-gray-500">Tỷ lệ thay đổi doanh thu</p>
               </div>
               <div className="text-right">
                 <p className={`text-lg font-bold ${analyticsData?.revenueGrowthPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {analyticsData?.revenueGrowthPercent >= 0 ? '+' : ''}{analyticsData?.revenueGrowthPercent?.toFixed(1) || 0}%
                 </p>
-                <p className="text-sm text-gray-500">vs previous period</p>
+                <p className="text-sm text-gray-500">so với kỳ trước</p>
               </div>
             </div>
             
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-medium text-gray-900">Enrollment Growth</p>
-                <p className="text-sm text-gray-500">Percentage change in enrollments</p>
+                <p className="font-medium text-gray-900">Tăng trưởng tuyển sinh</p>
+                <p className="text-sm text-gray-500">Tỷ lệ thay đổi trong tuyển sinh</p>
               </div>
               <div className="text-right">
                 <p className={`text-lg font-bold ${analyticsData?.enrollmentGrowthPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {analyticsData?.enrollmentGrowthPercent >= 0 ? '+' : ''}{analyticsData?.enrollmentGrowthPercent?.toFixed(1) || 0}%
                 </p>
-                <p className="text-sm text-gray-500">vs previous period</p>
+                <p className="text-sm text-gray-500">so với kỳ trước</p>
               </div>
             </div>
             
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-medium text-gray-900">Rating Growth</p>
-                <p className="text-sm text-gray-500">Percentage change in average rating</p>
+                <p className="font-medium text-gray-900">Xếp hạng tăng trưởng</p>
+                <p className="text-sm text-gray-500">Tỷ lệ phần trăm thay đổi trong xếp hạng trung bình</p>
               </div>
               <div className="text-right">
                 <p className={`text-lg font-bold ${analyticsData?.ratingGrowthPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {analyticsData?.ratingGrowthPercent >= 0 ? '+' : ''}{analyticsData?.ratingGrowthPercent?.toFixed(1) || 0}%
                 </p>
-                <p className="text-sm text-gray-500">vs previous period</p>
+                <p className="text-sm text-gray-500">so với kỳ trước</p>
               </div>
             </div>
           </div>

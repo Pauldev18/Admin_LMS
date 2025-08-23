@@ -351,25 +351,25 @@ const VoucherManagement = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Voucher Code
+                    Mã voucher
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Discount
+                    Giảm giá
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Usage
+                    Lượt sử dụng
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valid Period
+                    Thời hạn hiệu lực
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Scope
+                    Phạm vi áp dụng
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    Trạng thái
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    Hành động
                   </th>
                 </tr>
               </thead>
@@ -391,7 +391,7 @@ const VoucherManagement = () => {
                             </button>
                           </div>
                           <div className="text-sm text-gray-500">
-                            by {voucher.createdByName}
+                            bởi {voucher.createdByName}
                           </div>
                         </div>
                       </div>
@@ -444,8 +444,12 @@ const VoucherManagement = () => {
                       <div className="flex items-center text-sm text-gray-500">
                         <FiCalendar className="mr-1 h-4 w-4" />
                         <div>
-                          <div>{formatDate(voucher.startDate)}</div>
-                          <div>to {formatDate(voucher.endDate)}</div>
+                         <div>
+                            <span className="font-bold">{formatDate(voucher.startDate)}</span>
+                          </div>
+                          <div>
+                            tới <span className="font-bold">{formatDate(voucher.endDate)}</span>
+                          </div>
                         </div>
                       </div>
                     </td>

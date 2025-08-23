@@ -3,6 +3,8 @@ import { Plus, ChevronRight, ChevronDown, Folder, FolderOpen, FolderX } from 'lu
 import DataTable from '../components/UI/DataTable';
 import Modal from '../components/UI/Modal';
 import { createCategory, deleteCategory, fetchCategoryTree, updateCategory } from '../API/categoryApi';
+import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 
 export const flattenTree = (nodes, level = 0) => {
   return nodes.flatMap((node) => {
@@ -88,7 +90,7 @@ const Categories = () => {
               <div className="flex items-center space-x-3">
                 <span className="font-medium text-gray-900">{category.name}</span>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {category.numCourse} courses
+                  {category.numCourse} khóa học
                 </span>
                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   category.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
@@ -142,7 +144,7 @@ const Categories = () => {
 
   const tableColumns = [
     {
-      header: 'Category',
+      header: 'Danh mục',
       accessor: 'name',
       render: (category) => (
         <div className="flex items-center space-x-3">
@@ -164,25 +166,25 @@ const Categories = () => {
       )
     },
     {
-      header: 'Parent Category',
+      header: 'Danh mục cha',
       accessor: 'parentId',
       render: (category) => {
-        if (!category.parentId) return <span className="text-gray-400">Root Category</span>;
+        if (!category.parentId) return <span className="text-gray-400">Danh mục gốc</span>;
         const parent = categoryTree.find(c => c.id === category.parentId);
         return parent ? parent.name : '-';
       }
     },
     {
-      header: 'Course Count',
+      header: 'Số khóa học',
       accessor: 'courseCount',
       render: (category) => (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {category.numCourse} courses
+          {category.numCourse} khóa học
         </span>
       )
     },
     {
-      header: 'Status',
+      header: 'Trạng thái',
       accessor: 'isActive',
       render: (category) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -220,23 +222,43 @@ const Categories = () => {
   };
 
   const handleDelete = async (category) => {
-  const confirmed = confirm(`Bạn có chắc chắn muốn xoá danh mục "${category.name}"?`);
-  if (!confirmed) return;
+    const { isConfirmed } = await Swal.fire({
+      title: 'Xoá danh mục?',
+      text: `Bạn có chắc chắn muốn xoá danh mục "${category.name}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Xoá',
+      cancelButtonText: 'Huỷ',
+      reverseButtons: true,
+      focusCancel: true,
+    });
 
-  try {
-    await deleteCategory(category.id);
-    alert('Xoá thành công!');
-    loadData(); 
-  } catch (error) {
-    console.error('Lỗi khi xoá danh mục:', error);
-    alert(error?.response?.data || 'Xoá thất bại');
-  }
-};
+    if (!isConfirmed) return;
 
+    try {
+      await deleteCategory(category.id);
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Xoá thành công!',
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      loadData();
+    } catch (error) {
+      const msg = error?.response?.data || 'Xoá thất bại';
+      await Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: String(msg),
+      });
+    }
+  };
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Danh mục</h1>
         <div className="flex items-center space-x-3">
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
@@ -262,7 +284,7 @@ const Categories = () => {
           </div>
           <button onClick={handleCreate} className="btn-primary">
             <Plus className="h-4 w-4 mr-2" />
-            Add Category
+            Thêm danh mục
           </button>
         </div>
       </div>
@@ -288,9 +310,9 @@ const Categories = () => {
         onClose={() => setIsModalOpen(false)}
         title={
           modalMode === 'create' ? 
-            (selectedCategory?.parentId ? `Create Subcategory under "${selectedCategory.parentName}"` : 'Create New Category') :
-          modalMode === 'edit' ? 'Edit Category' :
-          'Category Details'
+            (selectedCategory?.parentId ? `Tạo danh mục con trong "${selectedCategory.parentName}"` : 'Thêm danh mục mới') :
+          modalMode === 'edit' ? 'Sửa danh mục' :
+          'Thông tin chi tiết'
         }
       >
        <CategoryForm 
@@ -338,14 +360,16 @@ const handleSubmit = async (e) => {
   try {
     if (mode === 'create') {
       await createCategory(payload);
+      toast.success("Thêm danh mục thành công");
     } else if (mode === 'edit' && category?.id) {
       await updateCategory(category.id, payload);
+      toast.success("Cập nhật danh mục thành công");
     }
 
     onClose();
   } catch (error) {
     console.error('Lỗi khi gửi form:', error);
-    alert('Có lỗi xảy ra khi lưu category');
+    toast.error('Có lỗi xảy ra khi lưu category');
   }
 };
  const getParentCategories = () => {
@@ -363,20 +387,20 @@ const handleSubmit = async (e) => {
     <div className="max-w-[700px]">
       <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
         <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">
-          📂 Category Details
+          📂 Thông tin danh mục
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
             <label className="block text-sm font-medium text-blue-600 mb-1">
-              Category Name
+              Tên danh mục
             </label>
             <p className="text-gray-900 font-medium">{category.name}</p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
             <label className="block text-sm font-medium text-yellow-600 mb-1">
-              Status
+              Trạng thái
             </label>
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
@@ -391,19 +415,19 @@ const handleSubmit = async (e) => {
 
           <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
             <label className="block text-sm font-medium text-purple-600 mb-1">
-              Parent Category
+              Danh mục cha
             </label>
             <p className="text-gray-900 font-medium">
-              {parentCategory ? parentCategory.name : 'Root Category'}
+              {parentCategory ? parentCategory.name : 'Danh mục gốc'}
             </p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
             <label className="block text-sm font-medium text-pink-600 mb-1">
-              Course Count
+              Số khóa học
             </label>
             <p className="text-gray-900 font-medium">
-              {category.numCourse} courses
+              {category.numCourse} khóa học
             </p>
           </div>
         </div>
@@ -416,7 +440,7 @@ const handleSubmit = async (e) => {
   <form onSubmit={handleSubmit} className="space-y-4">
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Tên danh mục</label>
         <input
           type="text"
           value={formData.name}
@@ -427,7 +451,7 @@ const handleSubmit = async (e) => {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
         <select
           value={formData.status}
           onChange={(e) => setFormData({ ...formData, status: e.target.value })}
@@ -459,10 +483,10 @@ const handleSubmit = async (e) => {
     {/* Buttons */}
     <div className="flex justify-end space-x-3 pt-4">
       <button type="button" onClick={onClose} className="btn-secondary">
-        Cancel
+        Hủy
       </button>
       <button type="submit" className="btn-primary">
-        {mode === 'create' ? 'Create Category' : 'Update Category'}
+        {mode === 'create' ? 'Thêm danh mục' : 'Cập nhật danh mục'}
       </button>
     </div>
 

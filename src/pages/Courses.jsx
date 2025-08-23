@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 const Courses = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [modalMode, setModalMode] = useState('create'); // 'create', 'edit', 'view'
+  const [modalMode, setModalMode] = useState('create'); 
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [courses, setCourses] = useState([]);
   const [filters, setFilters] = useState({ status: '', category: '' });
@@ -49,7 +49,7 @@ const Courses = () => {
 
   const columns = [
     {
-      header: 'Course',
+      header: 'Khóa học',
       accessor: 'title',
       render: (course) => (
         <div className="flex items-center space-x-3">
@@ -66,7 +66,7 @@ const Courses = () => {
       )
     },
     {
-      header: 'Category',
+      header: 'Danh mục',
       accessor: 'category',
       render: (course) => (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -75,7 +75,7 @@ const Courses = () => {
       )
     },
     {
-      header: 'Level',
+      header: 'Trình độ',
       accessor: 'level',
       render: (course) => (
         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -88,7 +88,7 @@ const Courses = () => {
       )
     },
     {
-      header: 'Price',
+      header: 'Giá bán',
       accessor: 'price',
       render: (course) => (
         <div>
@@ -104,12 +104,16 @@ const Courses = () => {
       )
     },
     {
-      header: 'Students',
+      header: 'Số học viên',
       accessor: 'numStudents',
-      render: (course) => course.numStudents.toLocaleString()
+      render: (course) => (
+      <span className="block text-center">
+        {course.numStudents.toLocaleString()}
+      </span>
+    ),
     },
     {
-      header: 'Rating',
+      header: 'Đánh giá',
       accessor: 'rating',
       render: (course) => (
         <div className="flex items-center space-x-1">
@@ -120,7 +124,7 @@ const Courses = () => {
       )
     },
     {
-      header: 'Status',
+      header: 'Trạng thái',
       accessor: 'status',
       render: (course) => (
         <div className="flex items-center space-x-2">
@@ -221,7 +225,7 @@ const filteredCourses = courses.filter(course => {
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
-              <option value="">All Status</option>
+              <option value="">Tất cả trạng thái</option>
               <option value="PUBLISHED">Đã xuất bản</option>
               <option value="DRAFT">Đang chờ duyệt</option>
               <option value="ARCHIVED">Đã lưu trữ</option>
@@ -233,7 +237,7 @@ const filteredCourses = courses.filter(course => {
               value={filters.category}
               onChange={(e) => setFilters({ ...filters, category: e.target.value })}
             >
-              <option value="">All Categories</option>
+              <option value="">Tất cả danh mục</option>
               {categories.map((cat, i) => (
                 <option key={i} value={cat}>{cat}</option>
               ))}
@@ -279,7 +283,7 @@ const filteredCourses = courses.filter(course => {
       <Modal
         isOpen={statusModalOpen}
         onClose={() => setStatusModalOpen(false)}
-        title="Change Course Status"
+        title="Cập nhật trạng thái khóa học"
         size="sm"
       >
         <StatusChangeForm 
@@ -323,11 +327,11 @@ const StatusChangeForm = ({ course, onStatusChange, onClose }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">{course?.title}</h3>
-        <p className="text-sm text-gray-500">Current status: <span className="font-medium">{course?.status}</span></p>
+        <p className="text-sm text-gray-500">Trạng thái hiện tại: <span className="font-medium">{course?.status}</span></p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">New Status</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Trạng thái mới</label>
         <div className="space-y-2">
           {statusOptions.map((option) => (
             <label key={option.value} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
@@ -350,14 +354,14 @@ const StatusChangeForm = ({ course, onStatusChange, onClose }) => {
 
       <div className="flex justify-end space-x-3 pt-4">
         <button type="button" onClick={onClose} className="btn-secondary">
-          Cancel
+          Hủy
         </button>
         <button 
           type="submit" 
           className="btn-primary"
           disabled={!newStatus || newStatus === course?.status}
         >
-          Update Status
+          Cập nhật trạng thái
         </button>
       </div>
     </form>
@@ -392,31 +396,31 @@ const CourseForm = ({ course, mode, onClose }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Title */}
         <div className="bg-blue-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-blue-600 mb-1">Title</label>
+          <label className="block text-sm font-semibold text-blue-600 mb-1">Tiêu đề</label>
           <p className="text-gray-900 text-lg font-medium">{course.title}</p>
         </div>
 
         {/* Instructor */}
         <div className="bg-indigo-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-indigo-600 mb-1">Instructor</label>
+          <label className="block text-sm font-semibold text-indigo-600 mb-1">Giảng viên</label>
           <p className="text-gray-900">{course.instructor}</p>
         </div>
 
         {/* Category */}
         <div className="bg-green-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-green-600 mb-1">Category</label>
+          <label className="block text-sm font-semibold text-green-600 mb-1">Danh mục</label>
           <p className="text-gray-900">{course.category}</p>
         </div>
 
         {/* Level */}
         <div className="bg-purple-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-purple-600 mb-1">Level</label>
+          <label className="block text-sm font-semibold text-purple-600 mb-1">Trình độ</label>
           <p className="text-gray-900">{course.level}</p>
         </div>
 
         {/* Price */}
         <div className="bg-pink-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-pink-600 mb-1">Price</label>
+          <label className="block text-sm font-semibold text-pink-600 mb-1">Giá bán</label>
           <p className="text-gray-900 font-bold">
             {Number(course.price).toLocaleString('vi-VN')} đ
           </p>
@@ -424,13 +428,13 @@ const CourseForm = ({ course, mode, onClose }) => {
 
         {/* Students */}
         <div className="bg-yellow-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-yellow-600 mb-1">Students</label>
+          <label className="block text-sm font-semibold text-yellow-600 mb-1">Học viên</label>
           <p className="text-gray-900">{course.numStudents}</p>
         </div>
 
         {/* Status */}
         <div className="bg-gray-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-gray-600 mb-1">Status</label>
+          <label className="block text-sm font-semibold text-gray-600 mb-1">Trạng thái</label>
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${
               course.status === 'Published'
@@ -448,9 +452,9 @@ const CourseForm = ({ course, mode, onClose }) => {
 
         {/* Rating */}
         <div className="bg-orange-50 rounded-lg p-4 shadow-sm">
-          <label className="block text-sm font-semibold text-orange-600 mb-1">Rating</label>
+          <label className="block text-sm font-semibold text-orange-600 mb-1">Đánh giá</label>
           <p className="text-gray-900">
-            {course.rating ?? 0} ⭐ ({course.numReviews} reviews)
+            {course.rating ?? 0} ⭐ ({course.numReviews} đánh giá)
           </p>
         </div>
       </div>
