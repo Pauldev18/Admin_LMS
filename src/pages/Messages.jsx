@@ -273,7 +273,7 @@ export default function Messages() {
       {/* Sidebar */}
       <aside className="w-80 border-r bg-white">
         <header className="p-4 border-b">
-          <h1 className="text-xl font-bold">Messages</h1>
+          <h1 className="text-xl font-bold">Tin nhắn</h1>
         </header>
         <div className="overflow-y-auto h-[calc(100%-4rem)]">
           {chats.map((chat) => (
@@ -536,7 +536,7 @@ export default function Messages() {
               <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FiMessageSquare className="h-8 w-8 text-gray-500" />
               </div>
-              <p className="text-gray-600">Select a chat to start messaging</p>
+              <p className="text-gray-600">Chọn một cuộc trò chuyện để bắt đầu nhắn tin</p>
             </div>
           </div>
         )}

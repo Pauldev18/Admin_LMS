@@ -283,7 +283,7 @@ const VoucherManagement = () => {
     <div className="w-full mx-auto">
       <div className="md:flex md:items-center md:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Voucher Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Quản lý mã giảm giá</h1>
           <p className="mt-1 text-sm text-gray-500">
             Tạo và quản lý mã giảm giá cho khoá học của bạn
           </p>

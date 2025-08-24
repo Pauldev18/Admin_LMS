@@ -217,7 +217,7 @@ const filteredCourses = courses.filter(course => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Courses</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Khóa học</h1>
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
            <select

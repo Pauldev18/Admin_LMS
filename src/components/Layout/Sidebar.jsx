@@ -17,17 +17,17 @@ import { MdPayment } from 'react-icons/md';
 import { GiLever } from 'react-icons/gi';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Courses', href: '/courses', icon: BookOpen },
-  { name: 'Users', href: '/users', icon: Users },
-  { name: 'Instructors', href: '/instructors', icon: UserCheck },
-  { name: 'Categories', href: '/categories', icon: FolderOpen },
-  { name: 'Level', href: '/levels', icon: Layers },
-  { name: 'Reviews', href: '/reviews', icon: Star },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Vouchers', href: '/vouchers', icon: Ticket },
-  { name: 'Payments', href: '/payment', icon: MdPayment },
-  { name: 'Messages', href: '/messages', icon: MessageSquare },
+  { name: 'Trang quản lý', href: '/', icon: Home },
+  { name: 'Khóa học', href: '/courses', icon: BookOpen },
+  { name: 'Người dùng', href: '/users', icon: Users },
+  { name: 'Hồ sơ giảng viên', href: '/instructors', icon: UserCheck },
+  { name: 'Danh mục', href: '/categories', icon: FolderOpen },
+  { name: 'Trình độ', href: '/levels', icon: Layers },
+  { name: 'Đánh giá', href: '/reviews', icon: Star },
+  { name: 'Thống kê', href: '/analytics', icon: BarChart3 },
+  { name: 'Mã giảm giá', href: '/vouchers', icon: Ticket },
+  { name: 'Hóa đơn', href: '/payment', icon: MdPayment },
+  { name: 'Tin nhắn', href: '/messages', icon: MessageSquare },
   
 ];
 
